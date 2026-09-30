@@ -1,8 +1,8 @@
 // Single source of truth for personal details used across the site.
-// TODO: set `url` to the portfolio's own domain before deploying (it currently points at the old profile site).
+// `url` must be the live domain: canonical links, the sitemap and social previews are built from it.
 
 export const SITE = {
-  url: 'https://phillip-profile.vercel.app',
+  url: 'https://john-phillip-lacorte.vercel.app',
   name: 'John Phillip Lacorte',
   shortName: 'John Phillip Lacorte',
   /** Used in first-person copy: "I'm John Phillip". */
