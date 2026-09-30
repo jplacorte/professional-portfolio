@@ -1,0 +1,28 @@
+---
+import SectionHeader from '@/components/ui/SectionHeader.astro';
+import { EXPERIENCE } from '@/data/experience';
+
+interface Props {
+  /** How many of the most recent roles to show. */
+  limit?: number;
+}
+const { limit = 3 } = Astro.props;
+---
+
+<section class="container-page mt-32">
+  <SectionHeader eyebrow="Experience" title="Where I’ve done it" link={{ href: '/about', label: 'Full history' }} />
+  <ol class="relative border-l border-line pl-6 sm:pl-8">
+    {EXPERIENCE.slice(0, limit).map((role) => (
+      <li data-reveal class="relative pb-10 last:pb-0">
+        <span class="absolute top-2 -left-[calc(1.5rem+4.5px)] size-2 rounded-full bg-ink ring-4 ring-paper sm:-left-[calc(2rem+4.5px)]" />
+        <p class="font-mono text-xs text-muted">
+          {role.period} · {role.location}
+        </p>
+        <h3 class="mt-1 text-lg font-semibold tracking-tight">
+          {role.title} <span class="font-normal text-muted">at</span> {role.company}
+        </h3>
+        <p class="mt-2 max-w-2xl text-sm text-ink-soft">{role.highlights[0]}</p>
+      </li>
+    ))}
+  </ol>
+</section>

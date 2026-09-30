@@ -1,0 +1,25 @@
+---
+/** Headline whose words rise into view one after another. Screen readers get the plain text. */
+interface Props {
+  text: string;
+  as?: 'h1' | 'h2';
+  class?: string;
+  /** Words to render in the accent colour. */
+  accent?: string[];
+}
+const { text, as: Tag = 'h1', class: className = '', accent = [] } = Astro.props;
+const words = text.split(' ');
+const clean = (w: string) => w.replace(/[.,—]/g, '');
+---
+
+<Tag class={className} aria-label={text}>
+  {words.map((word, i) => (
+    <>
+      <span class="split-word" aria-hidden="true">
+        <span style={`--i:${i}`} class={accent.includes(clean(word)) ? 'text-accent' : undefined}>
+          {word}
+        </span>
+      </span>{' '}
+    </>
+  ))}
+</Tag>

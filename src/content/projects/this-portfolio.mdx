@@ -1,0 +1,68 @@
+---
+title: This portfolio
+summary: A static-first Astro site with typed content, native-API animations and a single serverless function — built to score 95+ on Lighthouse while still feeling alive.
+role: Solo — design, build, infrastructure
+stack: [Astro, TypeScript, Tailwind CSS, MDX, Vercel, GitHub Actions, Resend]
+status: live
+year: '2026'
+featured: false
+order: 99
+draft: true
+---
+
+import SiteArchitecture from '@/components/diagrams/SiteArchitecture.astro';
+
+## The problem
+
+A portfolio has two audiences with opposite needs. Recruiters skim: they want to know in ten seconds what I do and whether it’s worth a call. Engineering managers dig: they want to see how I think about trade-offs. The site had to serve both without becoming either a flashy demo reel or a wall of text.
+
+It also had to be evidence in itself. A slow, janky portfolio from someone who claims to care about performance undermines every other claim on it.
+
+## Constraints
+
+- **Performance budget:** 95+ Lighthouse on every page, including the animated ones.
+- **Zero-ops:** no database or CMS to keep alive for a site that changes a few times a month.
+- **Accessible motion:** every animation must degrade to a calm, static page under `prefers-reduced-motion`.
+- **Cheap:** runs on free tiers indefinitely.
+
+## Architecture
+
+<SiteArchitecture />
+
+Every page is pre-rendered at build time and served from the CDN. The only code that runs on a server is `/api/contact`, marked `prerender = false`, which verifies a Cloudflare Turnstile token and sends mail through Resend.
+
+Content lives in the repo as MDX, validated by a Zod schema at build time. A case study with a missing `role` or a malformed link fails the build rather than shipping a broken page:
+
+```ts
+const projects = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/projects' }),
+  schema: z.object({
+    title: z.string(),
+    summary: z.string().max(180),
+    role: z.string(),
+    stack: z.array(z.string()).min(1),
+    status: z.enum(['live', 'in-progress', 'archived']),
+    draft: z.boolean().default(false),
+    // …
+  }),
+});
+```
+
+## Key decisions
+
+**Astro over Next.js.** Next.js is my day-to-day framework, and the obvious choice would have been to use it. But this is a content site with a handful of interactive islands; Astro ships zero JavaScript by default and lets me opt in per component. The result is a faster site with less to maintain — the same “right tool, not favourite tool” call I make on client projects.
+
+**Git-based content over a headless CMS.** I’m the only author. A CMS would add a service, a bill and an auth surface in exchange for an editing UI I don’t need. MDX in Git gives me versioning, pull-request previews and schema validation for free.
+
+**Native browser APIs over an animation library.** The page transitions use the View Transitions API, scroll reveals use CSS scroll-driven animations (with an `IntersectionObserver` fallback), and the hero is a hand-written canvas loop. That keeps the motion layer to a few kilobytes and lets the browser run most of it off the main thread.
+
+**Motion as progressive enhancement.** All animation CSS sits inside `@media (prefers-reduced-motion: no-preference)`. The canvas renders a single static frame for reduced-motion users and pauses whenever it scrolls off-screen or the tab is hidden, so it never burns battery in the background.
+
+## Delivery pipeline
+
+Every pull request runs `astro check`, a production build, Lighthouse CI against the built output, and a link check. Vercel posts a preview URL on the PR; merging to `main` deploys. Drafts are visible in `astro dev` and excluded from production builds by the content query, so unfinished case studies can live on `main` safely.
+
+## What I’d do differently
+
+{/* TODO(jaypee): replace with your own reflection once the site has been live for a while. */}
+If traffic or content grows, I’d add per-project Open Graph images generated at build time and a small `/notes` section for architecture write-ups. Both are additive — the static-first architecture doesn’t need to change for either.

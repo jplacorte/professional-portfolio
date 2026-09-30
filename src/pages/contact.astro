@@ -1,0 +1,31 @@
+---
+import ContactForm from '@/components/contact/ContactForm.astro';
+import SplitHeadline from '@/components/motion/SplitHeadline.astro';
+import { SITE } from '@/config/site';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Contact" description={`Get in touch with ${SITE.name}.`}>
+  <section class="container-page grid gap-14 pt-20 lg:grid-cols-[1fr_1.1fr]">
+    <div>
+      <p class="eyebrow fade-in-late" style="--delay:0ms">
+        Contact
+      </p>
+      <SplitHeadline
+        text="Tell me what you’re building."
+        class="mt-4 text-5xl font-semibold tracking-[-0.04em] sm:text-6xl"
+      />
+      <div class="fade-in-late mt-8 space-y-4 text-ink-soft" style="--delay:500ms">
+        <p>Roles, freelance projects, or a second opinion on an architecture — I usually reply within a working day.</p>
+        <p class="font-mono text-sm">
+          <a class="link-underline text-ink" href={`mailto:${SITE.email}`}>
+            {SITE.email}
+          </a>
+        </p>
+        <p class="font-mono text-xs text-muted">{SITE.location} · UTC+8</p>
+      </div>
+    </div>
+
+    <ContactForm />
+  </section>
+</BaseLayout>

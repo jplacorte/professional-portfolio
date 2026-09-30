@@ -1,0 +1,39 @@
+---
+import type { MarkdownHeading } from 'astro';
+import NextProject from '@/components/projects/NextProject.astro';
+import ProjectHeader from '@/components/projects/ProjectHeader.astro';
+import TableOfContents from '@/components/projects/TableOfContents.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import type { Project } from '@/lib/projects';
+import { SITE } from '@/config/site';
+import { projectJsonLd } from '@/lib/seo';
+
+interface Props {
+  project: Project;
+  headings: MarkdownHeading[];
+  next?: Project | undefined;
+}
+const { project, headings, next } = Astro.props;
+---
+
+<BaseLayout
+  title={project.data.title}
+  description={project.data.summary}
+  type="article"
+  image={`/og/projects/${project.id}.png`}
+  imageAlt={`${project.data.title} — case study by ${SITE.name}`}
+  jsonLd={projectJsonLd(project)}
+>
+  <div class="reading-progress fixed inset-x-0 top-0 z-50 h-0.5 bg-accent" aria-hidden="true"></div>
+
+  <ProjectHeader project={project} />
+
+  <div class="container-page grid grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[12rem_minmax(0,1fr)]">
+    <TableOfContents headings={headings} />
+    <article class="prose-case prose prose-lg min-w-0 max-w-[68ch] prose-headings:font-semibold prose-h2:mt-16">
+      <slot />
+    </article>
+  </div>
+
+  {next && next.id !== project.id && <NextProject project={next} />}
+</BaseLayout>

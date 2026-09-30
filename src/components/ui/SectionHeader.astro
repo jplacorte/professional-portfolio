@@ -1,0 +1,21 @@
+---
+/** Eyebrow + heading, with an optional "see more" link aligned right on larger screens. */
+interface Props {
+  eyebrow: string;
+  title: string;
+  link?: { href: string; label: string };
+}
+const { eyebrow, title, link } = Astro.props;
+---
+
+<div class="mb-10 flex items-end justify-between gap-6" data-reveal>
+  <div>
+    <p class="eyebrow">{eyebrow}</p>
+    <h2 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h2>
+  </div>
+  {link && (
+    <a href={link.href} class="link-underline hidden shrink-0 text-sm text-muted hover:text-ink sm:inline">
+      {link.label} →
+    </a>
+  )}
+</div>

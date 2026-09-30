@@ -1,0 +1,76 @@
+---
+title: Tonberry Cafe
+summary: A full-stack cafe product manager — NestJS and Prisma API, Vue 3 front end and shared packages in one Turborepo, shipped as a Docker image and a serverless function.
+role: Solo — architecture, API, front end, CI/CD
+stack:
+  [
+    NestJS,
+    Vue 3,
+    TypeScript,
+    Prisma,
+    PostgreSQL,
+    Turborepo,
+    pnpm,
+    Docker,
+    Tailwind CSS,
+    Jest,
+    Vitest,
+    GitHub Actions,
+    Vercel,
+    Cloudinary,
+  ]
+status: complete
+year: '2025'
+featured: true
+order: 1
+links:
+  repo: https://github.com/jplacorte/tonberry-cafe
+---
+
+import Todo from '@/components/ui/Todo.astro';
+
+## Overview
+
+Tonberry Cafe manages a cafe’s product catalogue: staff sign up, log in, and create, edit and remove products with prices, categories and photos. The domain is small on purpose. The point of the project is everything around it: a typed monorepo, a tested API, and a delivery pipeline that can ship the same backend two different ways.
+
+<Todo>
+  Add one line of context: what prompted the build (a brief, an assessment, a real cafe?) and how long you had.
+</Todo>
+
+## Architecture
+
+```text
+apps/
+  api/       NestJS · Prisma · PostgreSQL · JWT auth · Cloudinary uploads
+  pm-app/    Vue 3 · Vite · Vue Router · Tailwind CSS
+packages/
+  ui/        shared Vue components (Card, Modal, Dropdown, Pagination, Popover…)
+  types/     shared TypeScript interfaces used by both apps
+  eslint-config, typescript-config
+```
+
+The API is split into NestJS modules (`auth`, `users`, `products` and `cloudinary`), each with its own controller, service and DTOs. Every product route sits behind a Passport JWT guard, and each product is tied to the user who created it through a Prisma relation. Images are streamed straight to Cloudinary rather than stored on the server, which keeps the API stateless.
+
+The Vue app has login and registration views, a products page with **grid and list views**, and shared loading and error states. It pulls every component it needs from `@pm-web/ui` and every data shape from `@pm-web/types`. When the API contract changes, the front end fails to type-check instead of failing at runtime.
+
+## Key decisions
+
+**Monorepo with shared types.** The API and the UI agree on data shapes through one `types` package instead of two copies that drift. Turborepo caches builds per package, so changing the UI doesn’t rebuild the API.
+
+**Two deployment targets from one codebase.** The API ships two ways:
+
+- **As a container:** a Docker image built on Node 18 Alpine. Prisma is configured with `binaryTargets` for both the host machine and `linux-musl`, so the same client works locally and inside the container.
+- **As a Vercel function:** `vercel-handler.ts` boots the Nest app once, caches it, and wraps it in `serverless-http`, so later requests on a warm instance skip the Nest bootstrap.
+
+**CI that produces an artifact.** On every push to `main`, GitHub Actions builds only the API and its dependencies (`turbo run build --filter=api...`), then builds the Docker image and pushes it to GitHub Container Registry tagged with the commit SHA. It reuses the registry layer cache, so rebuilds stay fast.
+
+**Tests where the logic is.** Jest unit tests cover the products service: create, find, update and delete, including the not-found paths, with Prisma mocked. Vitest and Vue Test Utils cover the front-end loading state.
+
+## Local development
+
+`docker-compose up db` starts Postgres, `prisma migrate dev` creates the schema, and `pnpm dev` runs the API and the UI together in watch mode.
+
+<Todo>
+  Add a “What I’d do differently” section (h2). One or two honest reflections, e.g. adding pagination and filtering on
+  the API side, role-based permissions (the `role` column exists but isn't enforced yet), or E2E tests with Playwright.
+</Todo>

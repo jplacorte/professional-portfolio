@@ -1,0 +1,66 @@
+---
+---
+
+<button
+  type="button"
+  data-theme-toggle
+  class="grid size-8 place-items-center rounded-full text-muted transition-colors hover:bg-line hover:text-ink"
+  aria-label="Toggle dark mode"
+>
+  <svg viewBox="0 0 24 24" class="size-[18px]" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2" class="origin-center transition-transform duration-500 dark:scale-0"></circle>
+    <g class="origin-center transition-all duration-500 dark:rotate-90 dark:opacity-0">
+      <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M5.2 18.8l1.4-1.4M17.4 6.6l1.4-1.4"></path>
+    </g>
+    <path
+      d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"
+      class="origin-center scale-0 transition-transform duration-500 dark:scale-100"
+    ></path>
+  </svg>
+</button>
+
+<script>
+  function toggle(e: MouseEvent) {
+    const root = document.documentElement;
+    const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    const commit = () => {
+      root.dataset.theme = next;
+      try {
+        localStorage.setItem('theme', next);
+      } catch {
+        // Storage can be blocked (private mode); the theme still applies to this page.
+      }
+    };
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Circular reveal from the button using the View Transitions API.
+    if (!document.startViewTransition || reduced) return commit();
+    const x = e.clientX,
+      y = e.clientY;
+    const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    root.classList.add('theme-switching');
+    const vt = document.startViewTransition(commit);
+    vt.ready.then(() => {
+      root.animate(
+        { clipPath: [`circle(0 at ${x}px ${y}px)`, `circle(${r}px at ${x}px ${y}px)`] },
+        { duration: 650, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', pseudoElement: '::view-transition-new(root)' },
+      );
+    });
+    vt.finished.finally(() => root.classList.remove('theme-switching'));
+  }
+  document.addEventListener('astro:page-load', () => {
+    // The header persists across navigations, so only bind once.
+    const btn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+    if (btn && !btn.dataset.bound) {
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', toggle);
+    }
+  });
+</script>
+
+<style is:global>
+  .theme-switching::view-transition-old(root),
+  .theme-switching::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+</style>

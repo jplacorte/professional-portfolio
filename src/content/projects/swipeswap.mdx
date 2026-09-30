@@ -1,0 +1,56 @@
+---
+title: SwipeSwap
+summary: A swipe-to-trade barter marketplace. Swipe on items you want, match when the interest is mutual, then chat in real time to arrange the swap.
+role: Sole developer — full stack and AWS deployment (design by a partner)
+stack: [React, Redux, Node.js, Express, MongoDB, Mongoose, Socket.io, JWT, Cloudinary, Google Maps, AWS EC2]
+status: archived
+year: '2020–21'
+featured: true
+order: 2
+links:
+  repo: https://github.com/jplacorte/SwipeSwap
+---
+
+import Todo from '@/components/ui/Todo.astro';
+
+## Overview
+
+SwipeSwap is a barter marketplace built around the dating-app pattern. Instead of listing an item and waiting for offers, you swipe through other people’s items. When two people each want something the other owns, it’s a match, and a trade conversation opens.
+
+I built SwipeSwap at Startup Project Ventures, my first company. I was the only developer: I wrote the React front end, the Express API, the real-time layer and the data model, and deployed it to AWS EC2. My partner on the project was the designer.
+
+## How a swap works
+
+1. **List:** upload an item with photos, a description, its condition and categories.
+2. **Swipe:** browse other users’ items as swipeable cards, and mark the ones you want.
+3. **Match:** when two users want each other’s items, the server creates a match and pushes a notification to the other user over Socket.io.
+4. **Arrange:** the match opens a conversation with text and photo messages to agree on a schedule and meeting place.
+5. **Complete:** both sides confirm the swap, the items are marked as swapped, and each user reviews the other.
+
+On top of that: a **free and premium** model, an allowance of **rewinds** and **super-wants** (four each), swap coins, Facebook login and profile badges.
+
+## Architecture
+
+A single Express server serves a REST API and a Socket.io endpoint, backed by MongoDB through Mongoose. It is organised into 10 API route groups: auth, users, profiles, items, wants, matches, transactions, chat, reviews and limits. There are 12 data models, from `Item` and `Want` through `Match`, `Transaction`, `Conversation` and `Chat` to `Review` and `Limitation`. Routes are protected by JWT middleware, with object-ID validation on routes that take an ID.
+
+The React client (Create React App, Redux with thunk) uses `react-swipeable` for the card deck, `socket.io-client` for live notifications and chat, and Google Maps for picking meeting locations. Photos go directly to Cloudinary through Multer. The Express server and the built React app deploy together on an AWS EC2 instance.
+
+## Key decisions
+
+**MongoDB for a flexible item model.** Items carry many properties (photos, condition, categories, descriptions, reviews), and those properties vary from one kind of item to another and kept changing as the product evolved. A document database let each item store what it needed and let new fields ship without schema migrations. With a relational database, every change to the item model would have meant a migration, which would have slowed both iteration and scaling.
+
+**Socket.io attached to every request.** The server attaches the Socket.io instance to every request (`req.io`), so any route handler can push a real-time event. When a want completes a match, that route notifies the other user immediately, without a separate event bus.
+
+**Denormalised documents for fast screens.** Matches and transactions store copies of names, avatars and item photos next to the IDs they reference. The swipe deck and chat list render from a single query with no joins. The cost is extra update work when a user changes their profile.
+
+**Freemium swipe limits.** Swiping is the core loop, so it's also what the business model gates. Free users get 20 swipes, and premium users swipe without limit. A user's tier lives on their profile (`subscriptionlevel`), and a separate `Limitation` document per user tracks swipes used, rewinds left and super-wants left. Keeping usage in its own collection means the counters can be checked and updated on every swipe without touching the profile. The tier check is a single field, so premium users skip the limit entirely.
+
+## What I’d do differently
+
+**Make match creation atomic.** The want route checks whether a match exists, then creates one in a separate step. If two users swipe on each other’s items at the same moment, both requests can pass the check before either saves, and the pair ends up with two half-matches instead of one completed match. Today I’d let the database guarantee it:
+
+- Store each pair in a fixed order (the lower user ID first), so A→B and B→A look up the same key.
+- Add a **unique compound index** on that pair, so a duplicate can never be written.
+- Replace the check-then-create with a single `findOneAndUpdate({ upsert: true })`, so the lookup and the write happen in one operation.
+
+The unique index is the real safety net. The upsert just means the normal path never has to hit it.

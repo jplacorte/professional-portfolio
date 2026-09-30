@@ -1,0 +1,22 @@
+---
+import type { Project } from '@/lib/projects';
+
+interface Props {
+  project: Project;
+}
+const { project } = Astro.props;
+---
+
+<a href={`/projects/${project.id}`} class="group container-page mt-28 block" data-reveal>
+  <div class="border-t border-line pt-8">
+    <p class="eyebrow">Next project</p>
+    <p class="mt-3 flex items-center gap-4 text-3xl font-semibold tracking-tight sm:text-5xl">
+      <span class="transition-transform duration-500 ease-[var(--ease-out)] group-hover:translate-x-3">
+        {project.data.title}
+      </span>
+      <span class="text-accent transition-transform duration-500 ease-[var(--ease-out)] group-hover:translate-x-3">
+        →
+      </span>
+    </p>
+  </div>
+</a>

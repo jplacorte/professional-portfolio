@@ -1,0 +1,94 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import SplitHeadline from '@/components/motion/SplitHeadline.astro';
+import Button from '@/components/ui/Button.astro';
+import { EXPERIENCE, SKILLS } from '@/data/experience';
+import { SITE } from '@/config/site';
+---
+
+<BaseLayout title="About" description={`About ${SITE.name} — experience, skills and how I work.`}>
+  <section class="container-page grid gap-12 pt-20 lg:grid-cols-[1.2fr_1fr]">
+    <div>
+      <p class="eyebrow fade-in-late" style="--delay:0ms">
+        About
+      </p>
+      <SplitHeadline
+        text="Engineer first, increasingly the person who decides what gets built and how."
+        class="mt-4 text-4xl font-semibold tracking-[-0.04em] sm:text-5xl"
+      />
+    </div>
+    <div class="fade-in-late space-y-5 text-ink-soft lg:pt-10" style="--delay:500ms">
+      <p>
+        I’ve spent six years shipping web applications end to end in TypeScript, React, Next.js and Node.js — most of it
+        remote, with teams in London and Manila.
+      </p>
+      <p>
+        These days my job goes beyond delivery: I lead client-facing technical discussions, choose the stack for new
+        projects against cost and maintainability, own our cloud and SaaS spend, and mentor junior developers.
+      </p>
+      <p>I like boring infrastructure, typed boundaries, and pipelines that make releasing a non-event.</p>
+      <div class="flex flex-wrap gap-3 pt-2">
+        <Button href={SITE.links.resume} download>
+          Download résumé (PDF)
+        </Button>
+        <Button href="/contact" variant="ghost">
+          Contact
+        </Button>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-page mt-28">
+    <h2 class="eyebrow" data-reveal>
+      Experience
+    </h2>
+    <ol class="mt-6 border-t border-line">
+      {EXPERIENCE.map((r) => (
+        <li data-reveal class="grid gap-4 border-b border-line py-8 sm:grid-cols-[12rem_1fr]">
+          <div class="font-mono text-xs text-muted">
+            <p>{r.period}</p>
+            <p class="mt-1">{r.location}</p>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold tracking-tight">
+              {r.title} <span class="font-normal text-muted">·</span> {r.company}
+            </h3>
+            <ul class="mt-3 space-y-2 text-sm text-ink-soft">
+              {r.highlights.map((h) => (
+                <li class="relative pl-4 before:absolute before:top-[0.6em] before:left-0 before:size-1 before:rounded-full before:bg-line-strong">
+                  {h}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="container-page mt-24">
+    <h2 class="eyebrow" data-reveal>
+      Toolkit
+    </h2>
+    <div class="mt-6 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+      {SKILLS.map((s, i) => (
+        <div data-reveal style={`--reveal-delay:${i * 70}ms`} class="bg-paper p-6">
+          <h3 class="font-mono text-xs text-muted">{s.group}</h3>
+          <ul class="mt-4 flex flex-wrap gap-1.5">
+            {s.items.map((it) => (
+              <li class="rounded-md border border-line px-2 py-1 text-sm transition-colors hover:border-accent hover:text-accent">
+                {it}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="container-page mt-24" data-reveal>
+    <h2 class="eyebrow">Education</h2>
+    <p class="mt-4 text-lg font-medium">BS Information Technology</p>
+    <p class="font-mono text-xs text-muted">Central Philippine University · 2015 — 2019 · Iloilo City</p>
+  </section>
+</BaseLayout>

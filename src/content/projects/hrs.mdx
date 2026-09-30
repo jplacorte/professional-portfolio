@@ -1,0 +1,39 @@
+---
+title: HRS — Human Resource System
+summary: An in-house HR system for employee records and time in / time out, built at Startup Project Ventures so the company didn't need to pay for an HR SaaS subscription.
+role: Full-stack developer # TODO(jaypee): confirm, e.g. "Solo — full stack"
+stack: [React, Node.js, Express, MongoDB, REST API, JavaScript, AWS EC2]
+status: archived
+year: '2020'
+featured: true
+order: 4
+links:
+  repo: https://github.com/jplacorte/hrs
+---
+
+import Todo from '@/components/ui/Todo.astro';
+
+## Overview
+
+HRS (Human Resource System) is an internal tool I built in 2020 at my first company, Startup Project Ventures, to manage our employees. Rather than subscribing to an off-the-shelf employee management platform and paying per seat every month, we built the parts we actually needed and owned them.
+
+It covered two jobs:
+
+- **Employee directory.** Every employee's role, department, status (active, on leave, terminated), hire date and location, in a grid view or a list view.
+- **Attendance.** Employees recorded **time in and time out**, giving HR one place for attendance.
+
+## Why build instead of buy
+
+Most HR SaaS tools charge per employee per month and bundle features a small company never uses. Our needs were narrow: records and attendance. Building in-house turned a recurring subscription into hosting costs, kept employee data under our control, and let the tool follow our process instead of the other way round.
+
+## Architecture
+
+A React single-page app talked to a Node.js and Express REST API, which stored employee records and time in / time out entries in MongoDB. The app was deployed on an AWS EC2 instance.
+
+## The 2025 re-upload
+
+The repository linked here is a 2025 re-upload, kept as a milestone. It's set up as a modern `create-t3-turbo` monorepo (Next.js, tRPC, Expo), moves the data layer from MongoDB to PostgreSQL with Drizzle ORM, and rebuilds the employee directory as its first screen. It's a snapshot of the idea, not the code that ran in 2020.
+
+## Status
+
+Complete and no longer maintained. It served its purpose at Startup Project Ventures and is kept here as one of my early milestones.

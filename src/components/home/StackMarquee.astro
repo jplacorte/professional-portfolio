@@ -1,0 +1,18 @@
+---
+/** Infinite ticker of technologies. The list renders twice so the loop is seamless; the copy is hidden from screen readers. */
+interface Props {
+  items: readonly string[];
+}
+const { items } = Astro.props;
+---
+
+<section aria-label="Technologies" class="marquee overflow-hidden border-y border-line py-5">
+  <div class="marquee-track flex w-max gap-10 font-mono text-sm text-muted">
+    {[...items, ...items].map((item, i) => (
+      <span class="flex items-center gap-10" aria-hidden={i >= items.length ? 'true' : undefined}>
+        {item}
+        <span class="text-accent">✦</span>
+      </span>
+    ))}
+  </div>
+</section>

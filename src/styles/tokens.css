@@ -1,0 +1,46 @@
+/* Design tokens: colour palette (light + dark), fonts and easing curves. Exposed to Tailwind via @theme. */
+:root {
+  --paper: #f7f6f2;
+  --paper-raised: #ffffff;
+  --ink: #141413;
+  --ink-soft: #3d3d3a;
+  --muted: #6e6d68;
+  --line: #e3e1da;
+  --line-strong: #cfccc2;
+  --accent: #cc3a20; /* signal vermilion — AA on paper and under white text */
+  --accent-ink: #ffffff;
+  --accent-soft: color-mix(in oklab, var(--accent) 12%, transparent);
+  --grid: color-mix(in oklab, var(--ink) 9%, transparent);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --paper: #0e0e0d;
+  --paper-raised: #171716;
+  --ink: #edece6;
+  --ink-soft: #c9c8c1;
+  --muted: #8f8e87;
+  --line: #262624;
+  --line-strong: #373734;
+  --accent: #ff6a4d;
+  --accent-ink: #120705;
+  --grid: color-mix(in oklab, var(--ink) 7%, transparent);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-raised: var(--paper-raised);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, monospace;
+}

@@ -1,0 +1,37 @@
+---
+/** Live clock for a time zone, updated every 30s. Renders "—" until JavaScript runs. */
+interface Props {
+  timeZone: string;
+  /** Suffix shown after the time, e.g. "PHT". */
+  label: string;
+  class?: string;
+}
+const { timeZone, label, class: className } = Astro.props;
+---
+
+<local-time data-tz={timeZone} data-label={label} class={className}>
+  —
+</local-time>
+
+<script>
+  class LocalTime extends HTMLElement {
+    #timer: ReturnType<typeof setInterval> | undefined;
+
+    connectedCallback() {
+      const format = new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        timeZone: this.dataset.tz ?? 'UTC',
+      });
+      const tick = () => (this.textContent = `${format.format(new Date())} ${this.dataset.label ?? ''}`.trim());
+      tick();
+      this.#timer = setInterval(tick, 30_000);
+    }
+
+    disconnectedCallback() {
+      clearInterval(this.#timer);
+    }
+  }
+
+  if (!customElements.get('local-time')) customElements.define('local-time', LocalTime);
+</script>

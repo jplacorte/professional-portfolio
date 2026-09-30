@@ -1,0 +1,32 @@
+---
+import ContactCta from '@/components/home/ContactCta.astro';
+import ExperiencePreview from '@/components/home/ExperiencePreview.astro';
+import Hero from '@/components/home/Hero.astro';
+import Principles from '@/components/home/Principles.astro';
+import StackMarquee from '@/components/home/StackMarquee.astro';
+import ProjectList from '@/components/projects/ProjectList.astro';
+import SectionHeader from '@/components/ui/SectionHeader.astro';
+import { MARQUEE } from '@/data/experience';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getFeaturedProjects } from '@/lib/projects';
+
+const featured = await getFeaturedProjects();
+---
+
+<BaseLayout>
+  <Hero />
+  <StackMarquee items={MARQUEE} />
+
+  <section class="container-page mt-28">
+    <SectionHeader
+      eyebrow="Selected work"
+      title="Things I’ve built and why"
+      link={{ href: '/projects', label: 'All projects' }}
+    />
+    <ProjectList projects={featured} />
+  </section>
+
+  <Principles />
+  <ExperiencePreview />
+  <ContactCta />
+</BaseLayout>

@@ -1,0 +1,30 @@
+---
+import { SITE } from '@/config/site';
+---
+
+<section class="container-page mt-32">
+  <div data-reveal class="relative overflow-hidden rounded-3xl bg-ink px-6 py-16 text-paper sm:px-14 sm:py-20">
+    <div class="bg-blueprint absolute inset-0 opacity-40 [--grid:rgb(255_255_255/0.08)]" aria-hidden="true"></div>
+    <div class="relative">
+      <p class="font-mono text-xs tracking-widest text-paper/60 uppercase">Hiring or building something?</p>
+      <h2 class="mt-4 max-w-2xl text-4xl font-semibold tracking-tight sm:text-5xl">
+        Let’s talk about what you’re shipping next.
+      </h2>
+      <div class="mt-10 flex flex-wrap gap-3">
+        <a
+          href="/contact"
+          data-magnetic="0.3"
+          class="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-ink"
+        >
+          Get in touch
+        </a>
+        <a
+          href={`mailto:${SITE.email}`}
+          class="inline-flex items-center rounded-full border border-paper/25 px-6 py-3 font-mono text-sm hover:border-paper"
+        >
+          {SITE.email}
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

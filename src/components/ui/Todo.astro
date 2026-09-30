@@ -1,0 +1,11 @@
+---
+/** Loud placeholder for facts only you can supply. Renders only in `astro dev`, never in production builds. */
+const show = import.meta.env.DEV;
+---
+
+{show && (
+  <aside class="not-prose my-6 rounded-lg border border-dashed border-accent bg-accent-soft px-4 py-3 text-sm text-ink">
+    <span class="mr-2 font-mono text-xs font-semibold text-accent">TODO</span>
+    <slot />
+  </aside>
+)}

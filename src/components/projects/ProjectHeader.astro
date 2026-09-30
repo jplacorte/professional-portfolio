@@ -1,0 +1,66 @@
+---
+import { statusLabel, type Project } from '@/lib/projects';
+
+interface Props {
+  project: Project;
+}
+const { project } = Astro.props;
+const { data } = project;
+
+const links = [
+  { href: data.links.live, label: 'Live site' },
+  { href: data.links.repo, label: 'Source' },
+  { href: data.links.video, label: 'Walkthrough' },
+].filter((l): l is { href: string; label: string } => Boolean(l.href));
+---
+
+<header class="container-page pt-16 pb-12">
+  <a href="/projects" class="fade-in-late font-mono text-xs text-muted hover:text-ink" style="--delay:0ms">
+    ← All work
+  </a>
+  <h1
+    class="mt-6 max-w-4xl text-4xl font-semibold tracking-[-0.04em] sm:text-6xl"
+    transition:name={`title-${project.id}`}
+  >
+    {data.title}
+  </h1>
+  <p class="fade-in-late mt-5 max-w-2xl text-lg text-ink-soft" style="--delay:200ms">
+    {data.summary}
+  </p>
+
+  <dl
+    class="fade-in-late mt-10 grid grid-cols-2 gap-6 border-y border-line py-6 text-sm sm:grid-cols-4"
+    style="--delay:320ms"
+  >
+    <div>
+      <dt class="eyebrow">Role</dt>
+      <dd class="mt-2">{data.role}</dd>
+    </div>
+    <div>
+      <dt class="eyebrow">Year</dt>
+      <dd class="mt-2">{data.year}</dd>
+    </div>
+    <div>
+      <dt class="eyebrow">Status</dt>
+      <dd class="mt-2">{statusLabel[data.status]}</dd>
+    </div>
+    <div class="col-span-2 sm:col-span-1">
+      <dt class="eyebrow">Stack</dt>
+      <dd class="mt-2 flex flex-wrap gap-1.5">
+        {data.stack.map((tech) => (
+          <span class="rounded-md border border-line px-1.5 py-0.5 font-mono text-[0.7rem]">{tech}</span>
+        ))}
+      </dd>
+    </div>
+  </dl>
+
+  {links.length > 0 && (
+    <div class="fade-in-late mt-6 flex flex-wrap gap-4 text-sm" style="--delay:400ms">
+      {links.map((link) => (
+        <a href={link.href} target="_blank" rel="noopener" class="link-underline font-medium">
+          {link.label} ↗
+        </a>
+      ))}
+    </div>
+  )}
+</header>

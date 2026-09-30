@@ -1,0 +1,32 @@
+---
+title: FunnelWorkForce
+summary: A client project for an Upwork-style freelance marketplace, with employer and freelancer dashboards and a seven-step job-posting wizard.
+role: Sole developer (design by a partner)
+stack: [PHP, JavaScript, jQuery, Semantic UI, CSS, GoDaddy hosting]
+status: archived
+year: '2019'
+order: 5
+links:
+  repo: https://github.com/jplacorte/FunnelWorkForce
+---
+
+## Overview
+
+FunnelWorkForce is one of my first projects, built for a client who wanted an application similar to Upwork: a marketplace that connects employers with freelancers. It has two sides, each with its own dashboard, profile and "my jobs" views. Employers can browse a directory of freelancers, and freelancers can browse and open job details.
+
+I built the app on my own; my partner handled the design. We deployed it for the client on GoDaddy hosting.
+
+## What’s in it
+
+- **Sign up and login**, with separate flows for employers and freelancers.
+- **A seven-step job-posting wizard:** get started, description, details, expertise, visibility, budget, then review and post.
+- **Employer side:** dashboard, company profile, freelancer directory, job details and posted jobs.
+- **Freelancer side:** dashboard, profile, job details and my jobs.
+
+## Scope
+
+The code in this repository is the application’s front end: PHP page templates built with Semantic UI components and jQuery, covering every screen in both the employer and the freelancer journeys.
+
+## Looking back
+
+This was one of my first client builds, and the gap between it and how I work now is the point of keeping it here. Today I’d start from the data: a marketplace is relational by nature (users, jobs, proposals, contracts, reviews), so I’d model it in PostgreSQL with a typed ORM and role-based auth for employers and freelancers. The screens would be shared, typed components instead of pages with duplicated markup and inline styles, and the seven-step job wizard would be a single validated form that saves drafts. And instead of uploading files to shared hosting, every merge would deploy through a CI pipeline with preview environments.

@@ -1,0 +1,56 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import SplitHeadline from '@/components/motion/SplitHeadline.astro';
+import ProjectList from '@/components/projects/ProjectList.astro';
+import { getProjects } from '@/lib/projects';
+
+const projects = await getProjects();
+const caseStudies = projects.filter((p) => p.data.caseStudy);
+const archive = projects.filter((p) => !p.data.caseStudy);
+---
+
+<BaseLayout title="Work" description="Case studies of products I've designed, built and deployed.">
+  <section class="container-page pt-20 pb-14">
+    <p class="eyebrow fade-in-late" style="--delay:0ms">
+      Work · {caseStudies.length} case {caseStudies.length === 1 ? 'study' : 'studies'}
+    </p>
+    <SplitHeadline
+      text="Projects, and the decisions behind them."
+      class="mt-4 max-w-3xl text-5xl font-semibold tracking-[-0.04em] sm:text-6xl"
+    />
+    <p class="fade-in-late mt-6 max-w-xl text-ink-soft" style="--delay:600ms">
+      Each case study covers the problem, the constraints, the architecture and the trade-offs — including what I’d do
+      differently.
+    </p>
+  </section>
+
+  <section class="container-page">
+    <ProjectList projects={caseStudies} />
+  </section>
+
+  {archive.length > 0 && (
+    <section class="container-page mt-24">
+      <h2 class="eyebrow" data-reveal>
+        Archive
+      </h2>
+      <table class="mt-6 w-full text-left text-sm" data-reveal>
+        <thead class="font-mono text-xs text-muted">
+          <tr class="border-b border-line">
+            <th class="py-3 font-normal">Year</th>
+            <th class="py-3 font-normal">Project</th>
+            <th class="hidden py-3 font-normal sm:table-cell">Built with</th>
+          </tr>
+        </thead>
+        <tbody>
+          {archive.map((p) => (
+            <tr class="border-b border-line">
+              <td class="py-3 pr-4 font-mono text-xs text-muted">{p.data.year}</td>
+              <td class="py-3 pr-4">{p.data.title}</td>
+              <td class="hidden py-3 font-mono text-xs text-muted sm:table-cell">{p.data.stack.join(' · ')}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+  )}
+</BaseLayout>

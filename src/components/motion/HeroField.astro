@@ -1,0 +1,209 @@
+---
+/**
+ * Interactive blueprint dot-field behind the hero.
+ * - Ambient: a slow diagonal wave ripples through the grid.
+ * - Pointer: nearby dots are pushed away and lit in the accent colour.
+ * - Click / tap: emits a shockwave ring.
+ * Pauses when off-screen or the tab is hidden; renders a single static frame under reduced motion.
+ */
+---
+
+<canvas data-hero-field aria-hidden="true" class="pointer-events-none absolute inset-0 h-full w-full"></canvas>
+
+<script>
+  type Dot = { x: number; y: number; ox: number; oy: number; vx: number; vy: number; heat: number };
+  type Ring = { x: number; y: number; r: number; life: number };
+
+  let cleanup: (() => void) | null = null;
+
+  function init() {
+    cleanup?.();
+    const canvas = document.querySelector<HTMLCanvasElement>('[data-hero-field]');
+    if (!canvas) return;
+    const host = canvas.parentElement!;
+    const ctx = canvas.getContext('2d')!;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const GAP = 28;
+    const RADIUS = 150;
+    let w = 0;
+    let h = 0;
+    let dpr = 1;
+    let dots: Dot[] = [];
+    const rings: Ring[] = [];
+    const pointer = { x: -9999, y: -9999, active: false };
+    let ink = '#141413';
+    let accent = '#e5462c';
+    let raf = 0;
+    let running = false;
+    const t0 = performance.now();
+
+    const readColors = () => {
+      const cs = getComputedStyle(document.documentElement);
+      ink = cs.getPropertyValue('--ink').trim() || ink;
+      accent = cs.getPropertyValue('--accent').trim() || accent;
+    };
+
+    const build = () => {
+      const r = host.getBoundingClientRect();
+      w = r.width;
+      h = r.height;
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      dots = [];
+      const cols = Math.ceil(w / GAP) + 1;
+      const rows = Math.ceil(h / GAP) + 1;
+      const offX = (w - (cols - 1) * GAP) / 2;
+      const offY = (h - (rows - 1) * GAP) / 2;
+      for (let j = 0; j < rows; j++)
+        for (let i = 0; i < cols; i++) {
+          const x = offX + i * GAP,
+            y = offY + j * GAP;
+          dots.push({ x, y, ox: x, oy: y, vx: 0, vy: 0, heat: 0 });
+        }
+    };
+
+    const frame = (now: number) => {
+      const t = (now - t0) / 1000;
+      ctx.clearRect(0, 0, w, h);
+
+      for (const ring of rings) {
+        ring.r += 9;
+        ring.life -= 0.018;
+      }
+      for (let k = rings.length - 1; k >= 0; k--) if (rings[k]!.life <= 0) rings.splice(k, 1);
+
+      for (const d of dots) {
+        // ambient wave
+        const wave = Math.sin(d.ox * 0.012 + d.oy * 0.018 - t * 1.4);
+        let fx = (d.ox - d.x) * 0.06;
+        let fy = (d.oy + wave * 2.2 - d.y) * 0.06;
+
+        // pointer repulsion
+        if (pointer.active) {
+          const dx = d.x - pointer.x,
+            dy = d.y - pointer.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < RADIUS && dist > 0.01) {
+            const f = (1 - dist / RADIUS) ** 2;
+            fx += (dx / dist) * f * 7;
+            fy += (dy / dist) * f * 7;
+            d.heat = Math.max(d.heat, f);
+          }
+        }
+
+        // shockwave rings
+        for (const ring of rings) {
+          const dx = d.x - ring.x,
+            dy = d.y - ring.y;
+          const dist = Math.hypot(dx, dy);
+          const band = Math.abs(dist - ring.r);
+          if (band < 30 && dist > 0.01) {
+            const f = (1 - band / 30) * ring.life;
+            fx += (dx / dist) * f * 5;
+            fy += (dy / dist) * f * 5;
+            d.heat = Math.max(d.heat, f);
+          }
+        }
+
+        d.vx = (d.vx + fx) * 0.82;
+        d.vy = (d.vy + fy) * 0.82;
+        d.x += d.vx;
+        d.y += d.vy;
+        d.heat *= 0.94;
+
+        const base = 0.16 + (wave + 1) * 0.06;
+        if (d.heat > 0.04) {
+          ctx.globalAlpha = Math.min(1, base + d.heat);
+          ctx.fillStyle = accent;
+          const s = 1.4 + d.heat * 2.2;
+          ctx.fillRect(d.x - s / 2, d.y - s / 2, s, s);
+        } else {
+          ctx.globalAlpha = base;
+          ctx.fillStyle = ink;
+          ctx.fillRect(d.x - 0.7, d.y - 0.7, 1.4, 1.4);
+        }
+      }
+
+      // crosshair at pointer
+      if (pointer.active) {
+        ctx.globalAlpha = 0.5;
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(pointer.x, pointer.y, 14, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      if (running) raf = requestAnimationFrame(frame);
+    };
+
+    const start = () => {
+      if (running || reduced) return;
+      running = true;
+      raf = requestAnimationFrame(frame);
+    };
+    const stop = () => {
+      running = false;
+      cancelAnimationFrame(raf);
+    };
+
+    const onMove = (e: PointerEvent) => {
+      const r = canvas.getBoundingClientRect();
+      pointer.x = e.clientX - r.left;
+      pointer.y = e.clientY - r.top;
+      pointer.active = pointer.y >= 0 && pointer.y <= r.height;
+    };
+    const onLeave = () => (pointer.active = false);
+    const onDown = (e: PointerEvent) => {
+      if ((e.target as HTMLElement).closest('a,button,input,textarea')) return;
+      const r = canvas.getBoundingClientRect();
+      const y = e.clientY - r.top;
+      if (y < 0 || y > r.height) return;
+      rings.push({ x: e.clientX - r.left, y, r: 0, life: 1 });
+    };
+    const onVisibility = () => (document.hidden ? stop() : visible && start());
+
+    let visible = true;
+    const io = new IntersectionObserver(([entry]) => {
+      visible = !!entry?.isIntersecting;
+      if (visible) start();
+      else stop();
+    });
+    const ro = new ResizeObserver(() => {
+      build();
+      if (reduced) frame(performance.now());
+    });
+    const mo = new MutationObserver(readColors);
+
+    readColors();
+    build();
+    io.observe(host);
+    ro.observe(host);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    host.addEventListener('pointermove', onMove);
+    host.addEventListener('pointerleave', onLeave);
+    host.addEventListener('pointerdown', onDown);
+    document.addEventListener('visibilitychange', onVisibility);
+    if (reduced) frame(performance.now());
+    else start();
+
+    cleanup = () => {
+      stop();
+      io.disconnect();
+      ro.disconnect();
+      mo.disconnect();
+      host.removeEventListener('pointermove', onMove);
+      host.removeEventListener('pointerleave', onLeave);
+      host.removeEventListener('pointerdown', onDown);
+      document.removeEventListener('visibilitychange', onVisibility);
+      cleanup = null;
+    };
+  }
+
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', () => cleanup?.());
+</script>

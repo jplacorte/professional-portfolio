@@ -1,0 +1,15 @@
+/*
+ * Stylesheet entry point. Tailwind v4 is configured in CSS:
+ * tokens → base → prose → motion, each in its own file.
+ */
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+@import './tokens.css';
+@import './base.css';
+@import './prose.css';
+@import './motion.css';

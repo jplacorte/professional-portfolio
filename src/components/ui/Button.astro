@@ -1,0 +1,33 @@
+---
+interface Props {
+  href: string;
+  variant?: 'primary' | 'ghost';
+  magnetic?: boolean;
+  download?: boolean;
+  class?: string;
+}
+const { href, variant = 'primary', magnetic = true, download, class: className } = Astro.props;
+---
+
+<a
+  href={href}
+  download={download ? '' : undefined}
+  data-magnetic={magnetic ? '0.3' : undefined}
+  class:list={[
+    'group relative inline-flex items-center gap-2 overflow-hidden rounded-full px-5 py-2.5 text-sm font-medium',
+    variant === 'primary' ? 'bg-ink text-paper' : 'border border-line-strong text-ink hover:border-ink',
+    className,
+  ]}
+>
+  {variant === 'primary' && (
+    <span
+      aria-hidden="true"
+      class="absolute inset-0 translate-y-full rounded-full bg-accent transition-transform duration-500 ease-[var(--ease-out)] group-hover:translate-y-0"
+    />
+  )}
+  <span
+    class:list={['relative', variant === 'primary' && 'group-hover:text-accent-ink transition-colors duration-300']}
+  >
+    <slot />
+  </span>
+</a>

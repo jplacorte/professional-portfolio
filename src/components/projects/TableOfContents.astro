@@ -1,0 +1,29 @@
+---
+import type { MarkdownHeading } from 'astro';
+
+/** Sticky "On this page" nav for case studies. The active item is set by scripts/toc-spy.ts. */
+interface Props {
+  headings: MarkdownHeading[];
+}
+const items = Astro.props.headings.filter((h) => h.depth === 2);
+---
+
+{items.length > 0 && (
+  <nav aria-label="On this page" class="hidden lg:block" data-toc>
+    <div class="sticky top-24">
+      <p class="eyebrow">On this page</p>
+      <ol class="mt-4 space-y-2 border-l border-line text-sm">
+        {items.map((h) => (
+          <li>
+            <a
+              href={`#${h.slug}`}
+              class="-ml-px block border-l border-transparent pl-4 text-muted transition-colors hover:text-ink aria-[current=true]:border-accent aria-[current=true]:text-ink"
+            >
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </nav>
+)}

@@ -1,0 +1,31 @@
+---
+import { SITE } from '@/config/site';
+const year = new Date().getFullYear();
+const links = [
+  { href: `mailto:${SITE.email}`, label: 'Email' },
+  { href: SITE.links.github, label: 'GitHub' },
+  { href: SITE.links.linkedin, label: 'LinkedIn' },
+  { href: SITE.links.resume, label: 'Résumé' },
+].filter((l) => l.href);
+---
+
+<footer class="mt-24 border-t border-line">
+  <div class="container-page flex flex-col gap-6 py-10 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
+    <p class="font-mono text-xs">
+      © {year} {SITE.name} · Built with Astro, deployed on Vercel
+    </p>
+    <ul class="flex flex-wrap gap-x-5 gap-y-2">
+      {links.map((l) => (
+        <li>
+          <a
+            href={l.href}
+            class="link-underline hover:text-ink"
+            {...(l.href.startsWith('http') ? { target: '_blank', rel: 'noopener' } : {})}
+          >
+            {l.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</footer>

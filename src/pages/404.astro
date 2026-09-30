@@ -1,0 +1,25 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import HeroField from '@/components/motion/HeroField.astro';
+import Button from '@/components/ui/Button.astro';
+---
+
+<BaseLayout title="Not found">
+  <section class="relative isolate -mt-16 flex min-h-[80svh] items-center overflow-hidden pt-16">
+    <div class="bg-blueprint absolute inset-0 -z-10" aria-hidden="true"></div>
+    <HeroField />
+    <div class="container-page relative">
+      <p class="font-mono text-sm text-accent">404</p>
+      <h1 class="mt-3 text-5xl font-semibold tracking-[-0.04em] sm:text-7xl">This route isn’t deployed.</h1>
+      <p class="mt-5 max-w-md text-ink-soft">
+        The page you’re after doesn’t exist, or it moved. Try the work index instead.
+      </p>
+      <div class="mt-8 flex gap-3">
+        <Button href="/">Home</Button>
+        <Button href="/projects" variant="ghost">
+          All work
+        </Button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,64 @@
+---
+import HeroField from '@/components/motion/HeroField.astro';
+import SplitHeadline from '@/components/motion/SplitHeadline.astro';
+import Button from '@/components/ui/Button.astro';
+import LocalTime from '@/components/ui/LocalTime.astro';
+import { SITE } from '@/config/site';
+---
+
+<section class="relative isolate -mt-16 flex min-h-[92svh] items-end overflow-hidden pt-16">
+  <div class="bg-blueprint absolute inset-0 -z-10" aria-hidden="true"></div>
+  <HeroField />
+  <div class="container-page relative pb-16 sm:pb-24">
+    <p
+      class="fade-in-late mb-8 inline-flex items-center gap-2.5 rounded-full border border-line bg-paper/70 px-3 py-1.5 text-xs backdrop-blur"
+      style="--delay:0ms"
+    >
+      <span class="pulse-dot relative size-2 rounded-full bg-emerald-500"></span>
+      {SITE.availability.label}
+    </p>
+
+    <SplitHeadline
+      text="I build full-stack products and the systems that keep them running."
+      accent={['systems']}
+      class="max-w-4xl text-[clamp(2.4rem,7vw,5.6rem)] leading-[0.98] font-semibold tracking-[-0.045em]"
+    />
+
+    <div class="mt-10 grid gap-8 sm:grid-cols-[1fr_auto] sm:items-end">
+      <p class="fade-in-late max-w-xl text-lg text-ink-soft" style="--delay:750ms">
+        I’m {SITE.firstName} — a {SITE.role.toLowerCase()} in Manila with {SITE.yearsOfExperience} years of shipping
+        TypeScript products end to end: from Figma to Postgres to the CI pipeline and the cloud bill.
+      </p>
+      <div class="fade-in-late flex flex-wrap gap-3" style="--delay:900ms">
+        <Button href="/projects">See the work</Button>
+        <Button href={SITE.links.resume} variant="ghost" download>
+          Download résumé
+        </Button>
+      </div>
+    </div>
+
+    <dl
+      class="fade-in-late mt-14 grid grid-cols-2 gap-6 border-t border-line pt-6 font-mono text-xs sm:grid-cols-4"
+      style="--delay:1050ms"
+    >
+      <div>
+        <dt class="text-muted">Based in</dt>
+        <dd class="mt-1">{SITE.city}</dd>
+      </div>
+      <div>
+        <dt class="text-muted">Local time</dt>
+        <dd class="mt-1">
+          <LocalTime timeZone={SITE.timezone} label="PHT" />
+        </dd>
+      </div>
+      <div>
+        <dt class="text-muted">Experience</dt>
+        <dd class="mt-1">{SITE.yearsOfExperience} years</dd>
+      </div>
+      <div>
+        <dt class="text-muted">Focus</dt>
+        <dd class="mt-1">{SITE.focus}</dd>
+      </div>
+    </dl>
+  </div>
+</section>

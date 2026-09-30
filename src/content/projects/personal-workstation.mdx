@@ -1,0 +1,52 @@
+---
+title: Personal Workstation
+summary: An interactive personal profile styled like a hardware workstation — dark soft-UI panels, VU meters and tactile controls, animated with Anime.js on Next.js 16.
+role: Solo — design, build, deployment
+stack: [Next.js 16, React 19, Tailwind CSS v4, Anime.js v4, TypeScript, Vercel]
+status: live
+year: '2026'
+featured: true
+order: 3
+links:
+  live: https://phillip-profile.vercel.app/#intro
+  repo: https://github.com/jplacorte/personal-profile
+---
+
+## The idea
+
+Most personal sites are a résumé with a nicer font. I wanted the opposite: a place that shows who I am outside work — mechanical keyboards, games, music, film, photography — presented the way I’d build a piece of hardware. The site treats itself as a workstation: every section is a “module”, controls look and respond like physical switches, and the copy speaks in system language (`MODULE_`, `SYS_`, `PWR`).
+
+## What’s on it
+
+- **Intro** — who I am and what I do.
+- **Studio & hobbies** — keyboard modding, competitive gaming, travel and karaoke.
+- **Media & audio** — a curated playlist with a working audio deck and VU meters, film and TV archives, sports, and a 16-photo gallery with a full-screen lightbox.
+- **Journey archive** — a chronological record from school through university.
+
+Interactive pieces include a tactile switch tester, a synthesizer-style builder, a radar simulator, the audio player and a karaoke track selector.
+
+## Design language
+
+The whole interface uses a dark **neumorphic (soft UI)** style: surfaces are extruded from and pressed into a single background colour using paired light and dark shadows, so buttons, faders and panels read as physical objects. The hard part of soft UI is legibility — low contrast is the style’s default — so structure comes from shadow depth and monospace labelling rather than borders and colour.
+
+## Architecture
+
+- **Next.js 16 (App Router, Turbopack) and React 19**, deployed on Vercel.
+- **Server by default.** Pages render as Server Components; only the interactive modules ship client JavaScript.
+- **Content separated from components.** Playlists, gallery items, hobbies and the journey timeline live as data, kept apart from behaviour and presentation, so adding a track or photo never means touching a component.
+- **Anime.js v4** drives the hardware-style motion: meters, switch travel and module transitions.
+- **Tailwind CSS v4** for styling, **Lucide** for icons, Yarn for packages.
+
+## Key decisions
+
+**A playground by design.** This site is my sandbox. Client work rewards proven, stable choices; here I deliberately do the opposite and use the site to try stacks and techniques I don’t get to use at work. Anime.js is the current example: I picked it up for this project to learn a timeline-based animation library properly. The next version may use a different framework or animation approach entirely, and that’s the point.
+
+**Content kept apart from the code, so the stack can change.** Because the site is meant to be rebuilt, playlists, photos, hobbies and the journey timeline live as plain data, separate from components and styling. Swapping the framework or the animation library means rewriting the presentation layer, not re-entering the content.
+
+## What I’d do differently
+
+The accessibility basics are in place: a skip link, a visible focus ring on every control, and a reduced-motion preference that the section animations and all CSS transitions respect. An audit shows two gaps worth closing in the next iteration.
+
+**Contrast is soft UI’s real cost.** The style gets its look from low contrast, and it shows in the small print: tiny monospace labels in muted grey on the dark panels fall below WCAG AA contrast. I’d set a minimum size and contrast for every label, and keep the soft shadows for surfaces rather than text.
+
+**Reduced motion should cover every animation, not most of them.** The main sections check the user’s reduced-motion setting before animating, but the interactive gaming, karaoke, keyboard-modding and travel cards call Anime.js directly, and a CSS rule can’t stop JavaScript animations. I’d route all of them through the same `usePrefersReducedMotion` hook, so the setting is honoured everywhere.
