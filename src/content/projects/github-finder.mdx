@@ -1,0 +1,36 @@
+---
+title: GitHub Finder
+summary: A React app for searching GitHub users and viewing their profiles and latest repositories — built in 2019 while learning hooks, Context and reducers.
+role: Solo — front end
+stack: [React 16, React Hooks, Context API, React Router, Axios, GitHub REST API, Netlify]
+status: archived
+year: '2019'
+order: 7
+links:
+  repo: https://github.com/jplacorte/githubFinder
+---
+
+## Overview
+
+GitHub Finder is one of my first React projects, built in September 2019 while I was learning the then-new hooks API. You search for GitHub users, browse the results as a grid of cards, and open a profile to see the person’s bio, location, follower and repository counts, whether they’re open to hire, and their five most recent repositories.
+
+## What’s in it
+
+- **Search** with validation: an empty search shows an alert instead of calling the API, and a clear button resets the results.
+- **Profile pages** at `/user/:login`, with a back link, profile details and recent repositories.
+- **Routing** with React Router, including About and Not Found pages.
+- **Loading states** with a spinner while requests are in flight.
+
+## Architecture
+
+The app is a Create React App single-page application talking directly to the GitHub REST API (`/search/users`, `/users/:login` and `/users/:login/repos`) through Axios.
+
+State is split into two Context providers, each backed by `useReducer`: one for GitHub data (users, the selected user, repositories, loading) and one for alerts. Components dispatch typed actions from a shared `types.js`, which is the Redux pattern built from React’s own primitives, with no extra library. The build deploys to Netlify as a static site.
+
+## Looking back
+
+This is where I learned to separate state from components, and the reducer-and-actions shape has stayed with me. Reading the code now, three things stand out:
+
+- **Credentials don’t belong in the browser.** The app passed a GitHub OAuth client ID and secret as query parameters from the front end, so anything bundled into the JavaScript was effectively public. Today I’d keep a token on the server behind a small serverless proxy.
+- **Every request needs an unhappy path.** A rate limit or a mistyped username left the spinner running forever. Today I’d handle errors explicitly, encode user input in the query string, and use a data-fetching library such as TanStack Query for caching, retries and error states.
+- **Types catch the rest.** TypeScript models for the API responses would have caught several assumptions about which fields are always present.

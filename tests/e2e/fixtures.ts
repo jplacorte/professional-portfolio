@@ -9,6 +9,8 @@ export const ROUTES = [
   { path: '/projects/personal-workstation', heading: 'Personal Workstation' },
   { path: '/projects/hrs', heading: /Human Resource System/ },
   { path: '/projects/funnelworkforce', heading: 'FunnelWorkForce' },
+  { path: '/projects/my-hobbies', heading: 'My Hobbies' },
+  { path: '/projects/github-finder', heading: 'GitHub Finder' },
   { path: '/about', heading: /Engineer first/ },
   { path: '/contact', heading: /what you’re building/ },
 ] as const;

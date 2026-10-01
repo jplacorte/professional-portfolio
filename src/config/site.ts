@@ -10,12 +10,13 @@ export const SITE = {
   role: 'Full Stack Senior Software Engineer',
   location: 'Quezon City, Metro Manila, PH',
   city: 'Quezon City, PH',
+  /** Rendered as "6+ years", matching the CV summary. */
   yearsOfExperience: 6,
   focus: 'Full stack · DevOps',
   timezone: 'Asia/Manila',
   email: 'jaypeelacorte28@gmail.com',
   description:
-    'Full stack engineer with 6 years of experience building TypeScript products end to end — from Figma to production infrastructure, with an eye on cost, delivery and maintainability.',
+    'Senior full stack engineer with 6+ years of experience building production web applications in TypeScript, Node.js, React, Next.js and Go — from client brief to CI/CD and the cloud bill.',
   availability: {
     open: true,
     label: 'Open to senior and lead engineering roles',

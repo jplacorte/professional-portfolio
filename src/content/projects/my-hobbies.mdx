@@ -1,0 +1,42 @@
+---
+title: My Hobbies
+summary: A full-stack TypeScript app for keeping a profile and a list of hobbies — the technical test I built in under two weeks when applying to Cell 5 to work with Aphex.
+role: Solo — full stack (technical assessment)
+stack: [React 18, TypeScript, Redux, Tailwind CSS, Headless UI, Node.js, Express, TypeORM, MySQL, JWT]
+status: complete
+year: '2022'
+order: 6
+links:
+  repo: https://github.com/jplacorte/my-hobbies-client
+---
+
+## Overview
+
+My Hobbies was the technical assessment for my application to Cell 5, where I went on to work as a contractor with Aphex. The brief was a small CRUD application with authentication. I built it as two TypeScript repositories between 24 September and 5 October 2022: a React client ([my-hobbies-client](https://github.com/jplacorte/my-hobbies-client)) and an Express API ([my-hobbies-server](https://github.com/jplacorte/my-hobbies-server)).
+
+A user registers, signs in, edits a short profile with an introduction, and manages a list of hobbies, each with a name, description and image. Hobbies appear as image cards on the home page and in a table where they can be added, edited, deleted and sorted.
+
+## What’s in it
+
+- **Accounts:** registration with validation (required fields, a valid email, matching passwords, a unique email), sign-in and sign-out, and a protected profile page.
+- **Hobbies:** create, edit and delete through modal dialogs, sort by name in either direction or by ID, and browse them as image cards.
+- **Session handling:** an expired or invalid token logs the user out, and signing out in one browser tab signs out every open tab.
+
+## Architecture
+
+**API.** Express with TypeORM over MySQL. The data model is two entities: a `User` has many `Hobby` records, and the email column has a unique constraint. Passwords are hashed with bcrypt and never returned, because every response strips the `password` field before it is sent. Requests are validated with Joi. Sign-in issues a JWT that expires after five days, and a middleware verifies the `X-Auth-Token` header on every route except registration and sign-in. Code is split by responsibility into `entity`, `controller`, `middleware`, `validation` and `routes`.
+
+**Deletes are soft.** Deleting a hobby sets a `deleted` flag instead of removing the row, and every list query filters on it, so data can be recovered.
+
+**Client.** A Create React App project in TypeScript, styled with Tailwind CSS and Headless UI. Global state lives in Redux with thunks, split into `auth` and `user` reducers and actions. A store subscription keeps the token in sync between Redux, `localStorage` and Axios’s default headers. An Axios response interceptor clears the session on any `401`, and a `storage` event listener carries a sign-out across tabs.
+
+## Looking back
+
+The assessment did its job, and the client/server split, typed entities and layered API are the same shape I build today. It was also written in a few evenings for a reviewer to run locally, and reading it now, these are the changes I’d make before it went anywhere near production:
+
+- **Authorise, not just authenticate.** Every hobby route checks that the caller is signed in, but update, delete and fetch-by-ID don’t check that the hobby belongs to that user. Today I’d scope every query by owner, for example `where: { id, user: { id: userId } }`, and return `404` otherwise.
+- **Never pass a request body straight to the database.** The profile update writes `req.body` as-is, so a client could change fields it shouldn’t. I’d validate every write against an explicit schema (Zod, shared with the client) that allow-lists the fields.
+- **Use a real hashing cost.** Passwords were hashed with the lowest bcrypt work factor to keep the demo fast. I’d use a cost of 12 or more, or Argon2id.
+- **Configuration and migrations.** The database connection and API URL were hard-coded for `localhost`, and TypeORM’s `synchronize` built the schema. I’d read configuration from validated environment variables and manage the schema with versioned migrations.
+- **One way to call the API.** Some components called Axios directly instead of going through the shared client, so they skipped its interceptor. I’d route every request through one typed client and use TanStack Query for server state, leaving Redux (or nothing) for client state. I’d also keep the token in an `HttpOnly` cookie, not `localStorage`.
+- **Tests.** There were none. I’d add API integration tests against a throwaway database and a few component tests for the forms.
