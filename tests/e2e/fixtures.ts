@@ -7,6 +7,7 @@ export const ROUTES = [
   { path: '/projects/tonberry-cafe', heading: 'Tonberry Cafe' },
   { path: '/projects/swipeswap', heading: 'SwipeSwap' },
   { path: '/projects/personal-workstation', heading: 'Personal Workstation' },
+  { path: '/projects/phillips-anime', heading: 'Phillips Anime' },
   { path: '/projects/hrs', heading: /Human Resource System/ },
   { path: '/projects/funnelworkforce', heading: 'FunnelWorkForce' },
   { path: '/projects/my-hobbies', heading: 'My Hobbies' },

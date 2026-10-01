@@ -1,0 +1,167 @@
+---
+/**
+ * Boxes-and-arrows architecture diagram used in case studies.
+ * Pure SVG themed with design tokens, so it follows light and dark mode. Nodes lift on hover or focus
+ * (motion only when the user allows it). Diagrams describe themselves through `title` for screen readers.
+ * Styling is Tailwind utilities only: a component <style> block inside MDX is emitted inline and would be
+ * blocked by the hash-based CSP.
+ */
+export interface DiagramNode {
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  label: string;
+  sub: string;
+  accent?: boolean;
+}
+
+export interface DiagramEdge {
+  from: string;
+  to: string;
+  /** Short text drawn at the middle of the edge. */
+  label?: string;
+  /** Draw arrowheads at both ends, for request/response pairs. */
+  both?: boolean;
+}
+
+interface Props {
+  /** Prefix for SVG ids; must be unique on the page. */
+  id: string;
+  width: number;
+  height: number;
+  nodes: DiagramNode[];
+  edges: DiagramEdge[];
+  /** Full description of the diagram for assistive technology. */
+  title: string;
+  caption: string;
+}
+
+const { id, width, height, nodes, edges, title, caption } = Astro.props;
+
+const NODE_HEIGHT = 52;
+const byId = new Map(nodes.map((n) => [n.id, n]));
+
+function node(nodeId: string): DiagramNode {
+  const n = byId.get(nodeId);
+  if (!n) throw new Error(`Diagram "${id}": edge refers to unknown node "${nodeId}"`);
+  return n;
+}
+
+type Point = [number, number];
+const anchor = (n: DiagramNode, side: 'l' | 'r' | 't' | 'b'): Point => {
+  switch (side) {
+    case 'l':
+      return [n.x, n.y + NODE_HEIGHT / 2];
+    case 'r':
+      return [n.x + n.w, n.y + NODE_HEIGHT / 2];
+    case 't':
+      return [n.x + n.w / 2, n.y];
+    case 'b':
+      return [n.x + n.w / 2, n.y + NODE_HEIGHT];
+  }
+};
+
+/** Vertical neighbours get a straight line; everything else a horizontal S-curve. */
+function route(a: DiagramNode, b: DiagramNode): { d: string; mid: Point; vertical: boolean } {
+  if (Math.abs(a.x + a.w / 2 - (b.x + b.w / 2)) < 40) {
+    const down = a.y < b.y;
+    const [x1, y1] = anchor(a, down ? 'b' : 't');
+    const [x2, y2] = anchor(b, down ? 't' : 'b');
+    return { d: `M${x1} ${y1} L${x2} ${y2}`, mid: [(x1 + x2) / 2, (y1 + y2) / 2], vertical: true };
+  }
+  const right = a.x < b.x;
+  const [x1, y1] = anchor(a, right ? 'r' : 'l');
+  const [x2, y2] = anchor(b, right ? 'l' : 'r');
+  const mx = (x1 + x2) / 2;
+  return { d: `M${x1} ${y1} C${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`, mid: [mx, (y1 + y2) / 2], vertical: false };
+}
+
+const routed = edges.map((e) => ({ ...e, ...route(node(e.from), node(e.to)) }));
+const titleId = `${id}-title`;
+const gridId = `${id}-grid`;
+const arrowId = `${id}-arrow`;
+---
+
+<figure class="not-prose my-10" data-reveal>
+  <div class="overflow-x-auto rounded-xl border border-line bg-raised p-4">
+    <svg viewBox={`0 0 ${width} ${height}`} class="h-auto w-full min-w-[640px]" role="img" aria-labelledby={titleId}>
+      <title id={titleId}>{title}</title>
+      <defs>
+        <pattern id={gridId} width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M20 0H0V20" fill="none" stroke="var(--grid)" stroke-width="1"></path>
+        </pattern>
+        <marker
+          id={arrowId}
+          viewBox="0 0 10 10"
+          refX="9"
+          refY="5"
+          markerWidth="7"
+          markerHeight="7"
+          orient="auto-start-reverse"
+        >
+          <path d="M0 0L10 5L0 10z" fill="var(--muted)"></path>
+        </marker>
+      </defs>
+      <rect width={width} height={height} fill={`url(#${gridId})`}></rect>
+
+      {routed.map((e) => (
+        <g>
+          <path
+            d={e.d}
+            fill="none"
+            stroke="var(--muted)"
+            stroke-width="1.5"
+            marker-end={`url(#${arrowId})`}
+            marker-start={e.both ? `url(#${arrowId})` : undefined}
+          />
+          {e.label && (
+            <text
+              x={e.vertical ? e.mid[0] + 10 : e.mid[0]}
+              y={e.vertical ? e.mid[1] + 4 : e.mid[1] - 8}
+              text-anchor={e.vertical ? 'start' : 'middle'}
+              fill="var(--muted)"
+              font-size="10"
+              font-family="var(--font-mono)"
+            >
+              {e.label}
+            </text>
+          )}
+        </g>
+      ))}
+
+      {nodes.map((n) => (
+        <g
+          class="group outline-none motion-safe:transition-[translate] motion-safe:hover:-translate-y-[3px] motion-safe:focus:-translate-y-[3px]"
+          tabindex="0"
+        >
+          <rect
+            x={n.x}
+            y={n.y}
+            width={n.w}
+            height={NODE_HEIGHT}
+            rx="8"
+            fill="var(--paper)"
+            stroke={n.accent ? 'var(--accent)' : 'var(--line-strong)'}
+            stroke-width={n.accent ? 1.8 : 1.2}
+            class="transition-[stroke] group-hover:stroke-[var(--accent)] group-focus:stroke-[var(--accent)]"
+          />
+          <text
+            x={n.x + 14}
+            y={n.y + 22}
+            fill="var(--ink)"
+            font-size="13"
+            font-weight="600"
+            font-family="var(--font-sans)"
+          >
+            {n.label}
+          </text>
+          <text x={n.x + 14} y={n.y + 39} fill="var(--muted)" font-size="10.5" font-family="var(--font-mono)">
+            {n.sub}
+          </text>
+        </g>
+      ))}
+    </svg>
+  </div>
+  <figcaption class="mt-3 font-mono text-xs text-muted">{caption}</figcaption>
+</figure>

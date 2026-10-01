@@ -1,0 +1,62 @@
+---
+title: Phillips Anime
+summary: A Windows desktop app that streams my anime library from Google Drive, with GPU-decoded playback, styled subtitles and instant seeking through a local range-request proxy.
+role: Solo — design, build, release
+stack: [C#, .NET 8, WinUI 3, LibVLCSharp, Google Drive API, Jikan API, MSIX, GitHub Actions]
+status: complete
+year: '2026'
+order: 4
+links:
+  repo: https://github.com/jplacorte/phillips-anime-v2
+---
+
+import AnimeStreaming from '@/components/diagrams/AnimeStreaming.astro';
+
+## Overview
+
+Phillips Anime is a native Windows app for watching my own anime library, which lives in a Google Drive folder. It shows each series as a cover-art grid, opens seasons and episodes, and plays them in a full-featured player. I built it in C# with WinUI 3 between March and April 2026, and it ships as a signed MSIX installer built by GitHub Actions.
+
+It was also a deliberate step outside my usual TypeScript stack: a desktop UI framework, a native media engine, and networking code written directly against TCP sockets.
+
+## The problem
+
+The files are MKVs with HEVC or 10-bit H.264 video, several audio tracks and styled ASS/SSA subtitles with positioning, blur and motion effects. A browser’s built-in video player handles almost none of that reliably, and Google Drive’s own preview re-encodes the video and drops the styled subtitles. I wanted the files played as they are, with instant seeking, and without downloading a whole episode first.
+
+## What’s in it
+
+- **Library:** series folders from Drive as a grid, with seasons, sub-folders and OVAs. Folders like `extras` and `fanart` are hidden, and decimal episodes such as `12.5` are numbered correctly.
+- **Cover art:** posters from MyAnimeList through the Jikan API, cached in memory and on disk, so each title is looked up once.
+- **Player:** GPU-accelerated decoding, styled subtitles, audio and subtitle track switching, MKV chapter navigation, fullscreen with auto-hiding controls, and keyboard shortcuts for everything.
+- **Binge mode:** episodes are linked in order, so “Next” and the `N` key always know where to go.
+
+## Architecture
+
+<AnimeStreaming />
+
+The app has three pages over four small services. `MainPage` lists series, `FolderPage` lists seasons and episodes, and `PlayerPage` hosts VLC. A single `GoogleDriveService` instance, shared across pages, wraps the Drive API with a read-only service account. `JikanService` and `ImageCacheService` handle cover art, and `LocalProxyServer` handles streaming.
+
+**Streaming through a local proxy.** VLC seeks by sending HTTP range requests, but Drive only serves file content to requests with an `Authorization` header, which VLC can’t add. So when an episode starts, the player opens a tiny HTTP proxy on `127.0.0.1` (port 8080, or any free port if that’s taken) and points VLC at it. The proxy forwards each request’s `Range` header to Drive’s `alt=media` endpoint with a bearer token and streams the partial response straight back. The app never downloads a whole episode, and a seek just becomes a new range request starting at that position.
+
+The proxy is written directly on `TcpListener`. It reads responses with `ResponseHeadersRead`, so it never buffers a file in memory, and copies the body through a 128 KB buffer. It also writes the whole response header block in one call: with Nagle’s algorithm off for low latency, header-by-header writes were going out as dozens of tiny packets.
+
+**Playback.** LibVLC decodes on the GPU with D3D11VA and renders into a WinUI swap-chain panel. External subtitle auto-detection is off, so only the tracks embedded in the file are used, and a three-second network buffer with automatic reconnect lets playback ride out a dropped connection.
+
+## Key decisions
+
+**Cache the access token.** Service-account tokens last an hour. The Drive service keeps the current token and refreshes it two minutes before it expires, so starting the next episode never waits on authentication, only on Drive itself.
+
+**Make cover-art lookup forgiving.** Folder names rarely match MyAnimeList titles exactly: they carry season tags, arc subtitles, years and light-novel-length titles. The lookup tries a sequence of candidates: the exact name, then quoted sub-titles, then the name without the year, arc subtitle and season tag, then shorter and shorter prefixes. For each candidate it checks the top five results for an exact title match before falling back to the first. Calls are spaced 400 ms apart to stay inside Jikan’s rate limit, and every hit is cached to disk for good.
+
+**Keep the UI thread honest.** VLC raises events on its own threads, so every handler hands its work back to the UI through `DispatcherQueue`. The chapter dropdown and VLC’s chapter events used to trigger each other in a loop. A flag now marks programmatic changes so they aren’t treated as user input. `PlayerPage` removes itself from the back stack and disposes VLC and the proxy when you leave, so player instances never accumulate.
+
+**Release with CI.** Every push to `main` builds a signed MSIX package on a Windows runner. The service-account key and the signing certificate are injected from GitHub secrets at build time, so neither is ever committed.
+
+## Looking back
+
+The app does what I built it for. Reading the code as if someone else were going to install it, these are the changes I’d make:
+
+- **Don’t ship the key.** The service-account key is bundled inside the installer, so anyone with a copy could extract it and read every file shared with that account. That’s acceptable for an app only I install, and wrong for anything I hand to someone else. I’d switch to per-user Google sign-in, using the OAuth flow for installed apps with PKCE and the read-only scope, and keep refresh tokens in the Windows Credential Locker.
+- **Keep the token inside the proxy.** The access token travels to the proxy in the URL’s query string. It never leaves the machine, but URLs end up in logs. The proxy should ask the Drive service for a token itself, so VLC’s URL carries only a file ID. I’d also swap the hand-written HTTP parsing for a minimal ASP.NET Core endpoint on Kestrel, which handles edge cases I don’t.
+- **Delete dead code.** The Drive service still has an unused helper that copies a file and shares it publicly. Nothing calls it and the read-only scope would reject it, but code that makes files public shouldn’t sit around waiting for someone to call it.
+- **Test the pure parts.** The cover-art title candidates and the episode numbering are pure functions with lots of edge cases, which makes them ideal for xUnit table tests in the CI build.
+- **Move configuration out of code.** The root Drive folder ID is a constant. It belongs in a settings page or a config file.

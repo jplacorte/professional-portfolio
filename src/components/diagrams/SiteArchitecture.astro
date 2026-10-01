@@ -1,18 +1,7 @@
 ---
-/**
- * Animated architecture diagram for this site.
- * Edges carry flowing "packets"; nodes lift on hover. Pure SVG + CSS, themed via currentColor tokens.
- */
-interface Node {
-  id: string;
-  x: number;
-  y: number;
-  w: number;
-  label: string;
-  sub: string;
-  accent?: boolean;
-}
-const nodes: Node[] = [
+import ArchitectureDiagram, { type DiagramEdge, type DiagramNode } from './ArchitectureDiagram.astro';
+
+const nodes: DiagramNode[] = [
   { id: 'repo', x: 20, y: 40, w: 200, label: 'GitHub repo', sub: 'MDX content + code' },
   { id: 'ci', x: 20, y: 170, w: 200, label: 'GitHub Actions', sub: 'check · build · Lighthouse' },
   { id: 'cdn', x: 290, y: 105, w: 180, label: 'Vercel edge / CDN', sub: 'pre-rendered HTML', accent: true },
@@ -20,112 +9,22 @@ const nodes: Node[] = [
   { id: 'fn', x: 570, y: 170, w: 150, label: '/api/contact', sub: 'serverless function' },
   { id: 'ext', x: 570, y: 290, w: 150, label: 'Turnstile + Resend', sub: 'spam check · email' },
 ];
-const byId = Object.fromEntries(nodes.map((n) => [n.id, n]));
-const H = 52;
-const edges: [string, string][] = [
-  ['repo', 'ci'],
-  ['ci', 'cdn'],
-  ['cdn', 'visitor'],
-  ['visitor', 'fn'],
-  ['fn', 'ext'],
+
+const edges: DiagramEdge[] = [
+  { from: 'repo', to: 'ci' },
+  { from: 'ci', to: 'cdn' },
+  { from: 'cdn', to: 'visitor' },
+  { from: 'visitor', to: 'fn' },
+  { from: 'fn', to: 'ext' },
 ];
-const anchor = (n: Node, side: 'l' | 'r' | 't' | 'b') =>
-  side === 'l'
-    ? [n.x, n.y + H / 2]
-    : side === 'r'
-      ? [n.x + n.w, n.y + H / 2]
-      : side === 't'
-        ? [n.x + n.w / 2, n.y]
-        : [n.x + n.w / 2, n.y + H];
-const path = (a: Node, b: Node) => {
-  if (Math.abs(a.x - b.x) < 40) {
-    const [x1, y1] = anchor(a, 'b');
-    const [x2, y2] = anchor(b, 't');
-    return `M${x1} ${y1} L${x2} ${y2}`;
-  }
-  const [x1, y1] = anchor(a, 'r');
-  const [x2, y2] = anchor(b, 'l');
-  const mx = (x1! + x2!) / 2;
-  return `M${x1} ${y1} C${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`;
-};
 ---
 
-<figure class="not-prose my-10" data-reveal>
-  <div class="overflow-x-auto rounded-xl border border-line bg-raised p-4">
-    <svg viewBox="0 0 740 360" class="h-auto w-full min-w-[640px]" role="img" aria-labelledby="arch-title">
-      <title id="arch-title">
-        Architecture: content in a GitHub repo is checked and built by GitHub Actions, deployed as static HTML to Vercel's edge. Visitors load pages from the edge; the contact form posts to a serverless function that verifies Turnstile and sends email with Resend.
-      </title>
-      <defs>
-        <pattern id="arch-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-          <path d="M20 0H0V20" fill="none" stroke="var(--grid)" stroke-width="1"></path>
-        </pattern>
-        <marker
-          id="arch-arrow"
-          viewBox="0 0 10 10"
-          refX="9"
-          refY="5"
-          markerWidth="7"
-          markerHeight="7"
-          orient="auto-start-reverse"
-        >
-          <path d="M0 0L10 5L0 10z" fill="var(--muted)"></path>
-        </marker>
-      </defs>
-      <rect width="740" height="360" fill="url(#arch-grid)"></rect>
-
-      {edges.map(([a, b]) => (
-        <path
-          d={path(byId[a]!, byId[b]!)}
-          fill="none"
-          stroke="var(--muted)"
-          stroke-width="1.5"
-          class="diagram-edge"
-          marker-end="url(#arch-arrow)"
-        />
-      ))}
-
-      {nodes.map((n) => (
-        <g class="diagram-node group" tabindex="0">
-          <rect
-            x={n.x}
-            y={n.y}
-            width={n.w}
-            height={H}
-            rx="8"
-            fill="var(--paper)"
-            stroke={n.accent ? 'var(--accent)' : 'var(--line-strong)'}
-            stroke-width={n.accent ? 1.8 : 1.2}
-            class="transition-[stroke] group-hover:stroke-[var(--accent)] group-focus:stroke-[var(--accent)]"
-          />
-          <text
-            x={n.x + 14}
-            y={n.y + 22}
-            fill="var(--ink)"
-            font-size="13"
-            font-weight="600"
-            font-family="var(--font-sans)"
-          >
-            {n.label}
-          </text>
-          <text x={n.x + 14} y={n.y + 39} fill="var(--muted)" font-size="10.5" font-family="var(--font-mono)">
-            {n.sub}
-          </text>
-        </g>
-      ))}
-    </svg>
-  </div>
-  <figcaption class="mt-3 font-mono text-xs text-muted">
-    Fig. 1 — Static-first: only the contact form runs server-side.
-  </figcaption>
-</figure>
-
-<style>
-  @media (prefers-reduced-motion: no-preference) {
-    .diagram-node:hover,
-    .diagram-node:focus {
-      transform: translateY(-3px);
-      outline: none;
-    }
-  }
-</style>
+<ArchitectureDiagram
+  id="site-arch"
+  width={740}
+  height={360}
+  {nodes}
+  {edges}
+  title="Architecture: content in a GitHub repo is checked and built by GitHub Actions, deployed as static HTML to Vercel's edge. Visitors load pages from the edge; the contact form posts to a serverless function that verifies Turnstile and sends email with Resend."
+  caption="Fig. 1 — Static-first: only the contact form runs server-side."
+/>

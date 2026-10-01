@@ -1,0 +1,26 @@
+---
+import ArchitectureDiagram, { type DiagramEdge, type DiagramNode } from './ArchitectureDiagram.astro';
+
+const nodes: DiagramNode[] = [
+  { id: 'player', x: 20, y: 40, w: 170, label: 'LibVLC player', sub: 'D3D11VA GPU decode' },
+  { id: 'proxy', x: 290, y: 40, w: 170, label: 'Local proxy', sub: '127.0.0.1 only', accent: true },
+  { id: 'drive', x: 560, y: 40, w: 160, label: 'Google Drive API', sub: 'files/{id}?alt=media' },
+  { id: 'auth', x: 290, y: 170, w: 170, label: 'GoogleDriveService', sub: 'token cached ~1 hour' },
+];
+
+const edges: DiagramEdge[] = [
+  { from: 'player', to: 'proxy', label: 'GET + Range', both: true },
+  { from: 'proxy', to: 'drive', label: 'Range + token', both: true },
+  { from: 'auth', to: 'proxy', label: 'access token' },
+];
+---
+
+<ArchitectureDiagram
+  id="anime-stream"
+  width={740}
+  height={250}
+  {nodes}
+  {edges}
+  title="Streaming: the VLC player requests byte ranges from a proxy on 127.0.0.1. The proxy adds a cached service-account access token and forwards each range request to the Google Drive API, then streams the partial response straight back to the player."
+  caption="Fig. 1 — VLC seeks with HTTP range requests; the local proxy authenticates them against Google Drive."
+/>
