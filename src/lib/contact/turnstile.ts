@@ -1,8 +1,10 @@
 const VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+const TIMEOUT_MS = 5_000;
 
 /**
  * Verifies a Cloudflare Turnstile token server-side.
- * Returns true when no secret is configured, so local development works without keys.
+ * - No secret configured → passes, so local development works without keys.
+ * - Network error, timeout or unexpected response → fails closed.
  */
 export async function verifyTurnstile(
   secret: string | undefined,
@@ -15,8 +17,12 @@ export async function verifyTurnstile(
   const body = new URLSearchParams({ secret, response: token });
   if (ip) body.set('remoteip', ip);
 
-  const res = await fetch(VERIFY_URL, { method: 'POST', body });
-  if (!res.ok) return false;
-  const data = (await res.json()) as { success?: boolean };
-  return data.success === true;
+  try {
+    const res = await fetch(VERIFY_URL, { method: 'POST', body, signal: AbortSignal.timeout(TIMEOUT_MS) });
+    if (!res.ok) return false;
+    const data: unknown = await res.json();
+    return typeof data === 'object' && data !== null && 'success' in data && data.success === true;
+  } catch {
+    return false;
+  }
 }

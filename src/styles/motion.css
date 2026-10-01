@@ -129,7 +129,14 @@
     }
   }
 
-  /* View transitions between pages */
+  /*
+   * Page transitions: native cross-document View Transitions (no client router, CSP-friendly).
+   * Supporting browsers animate between pages; others navigate normally.
+   * Elements with a matching `view-transition-name` (project titles) morph between pages.
+   */
+  @view-transition {
+    navigation: auto;
+  }
   ::view-transition-old(root) {
     animation: vt-out 0.35s var(--ease-in-out) both;
   }
@@ -154,6 +161,13 @@
       filter: blur(4px);
     }
   }
+}
+
+/* The theme toggle drives its own circular-reveal animation on the new snapshot. */
+.theme-switching::view-transition-old(root),
+.theme-switching::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }
 
 @media (prefers-reduced-motion: reduce) {

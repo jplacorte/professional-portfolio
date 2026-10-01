@@ -27,15 +27,9 @@ links:
   repo: https://github.com/jplacorte/tonberry-cafe
 ---
 
-import Todo from '@/components/ui/Todo.astro';
-
 ## Overview
 
 Tonberry Cafe manages a cafe’s product catalogue: staff sign up, log in, and create, edit and remove products with prices, categories and photos. The domain is small on purpose. The point of the project is everything around it: a typed monorepo, a tested API, and a delivery pipeline that can ship the same backend two different ways.
-
-<Todo>
-  Add one line of context: what prompted the build (a brief, an assessment, a real cafe?) and how long you had.
-</Todo>
 
 ## Architecture
 
@@ -69,8 +63,3 @@ The Vue app has login and registration views, a products page with **grid and li
 ## Local development
 
 `docker-compose up db` starts Postgres, `prisma migrate dev` creates the schema, and `pnpm dev` runs the API and the UI together in watch mode.
-
-<Todo>
-  Add a “What I’d do differently” section (h2). One or two honest reflections, e.g. adding pagination and filtering on
-  the API side, role-based permissions (the `role` column exists but isn't enforced yet), or E2E tests with Playwright.
-</Todo>

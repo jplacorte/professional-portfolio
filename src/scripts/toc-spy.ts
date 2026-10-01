@@ -1,5 +1,3 @@
-import { removeOnSwap } from './media';
-
 /** A heading counts as "current" once it has scrolled above this fraction of the viewport. */
 const ACTIVE_LINE = 0.35;
 
@@ -32,5 +30,4 @@ export function initTocSpy(): void {
 
   update();
   window.addEventListener('scroll', onScroll, { passive: true });
-  removeOnSwap('scroll', onScroll);
 }

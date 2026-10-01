@@ -9,7 +9,7 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
 <header
   class="sticky top-0 z-40 border-b border-transparent bg-paper/75 backdrop-blur-md transition-colors [&.is-scrolled]:border-line"
   data-header
-  transition:persist
+  style="view-transition-name: site-header"
 >
   <div class="container-page flex h-16 items-center justify-between gap-4">
     <a href="/" class="group flex items-center gap-2.5 font-medium tracking-tight">
@@ -42,19 +42,3 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
     </nav>
   </div>
 </header>
-
-<script>
-  const onScroll = () => document.querySelector('[data-header]')?.classList.toggle('is-scrolled', scrollY > 8);
-  addEventListener('scroll', onScroll, { passive: true });
-  document.addEventListener('astro:page-load', () => {
-    onScroll();
-    // Header persists across navigations, so refresh the active nav item.
-    const path = location.pathname;
-    document.querySelectorAll<HTMLAnchorElement>('[data-header] nav a').forEach((a) => {
-      const href = a.getAttribute('href') ?? '';
-      const active = path === href || path.startsWith(`${href}/`);
-      if (active) a.setAttribute('aria-current', 'page');
-      else a.removeAttribute('aria-current');
-    });
-  });
-</script>

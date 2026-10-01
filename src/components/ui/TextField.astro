@@ -1,0 +1,18 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import Field from './Field.astro';
+import { FIELD_CLASS } from './field-styles';
+
+/** Labelled single-line input. Any other <input> attribute (type, required, maxlength…) passes through. */
+type Props = Omit<HTMLAttributes<'input'>, 'class'> & {
+  label: string;
+  name: string;
+  optional?: boolean;
+};
+
+const { label, optional = false, ...input } = Astro.props;
+---
+
+<Field label={label} optional={optional}>
+  <input class={FIELD_CLASS} {...input} />
+</Field>

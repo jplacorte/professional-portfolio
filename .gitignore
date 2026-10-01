@@ -8,3 +8,8 @@ dist/
 .DS_Store
 *.log
 .lighthouseci/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/

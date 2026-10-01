@@ -1,0 +1,18 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import Field from './Field.astro';
+import { FIELD_CLASS } from './field-styles';
+
+/** Labelled multi-line input. Any other <textarea> attribute (rows, required, maxlength…) passes through. */
+type Props = Omit<HTMLAttributes<'textarea'>, 'class'> & {
+  label: string;
+  name: string;
+  optional?: boolean;
+};
+
+const { label, optional = false, ...textarea } = Astro.props;
+---
+
+<Field label={label} optional={optional}>
+  <textarea class={FIELD_CLASS} {...textarea}></textarea>
+</Field>

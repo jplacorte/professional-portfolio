@@ -1,5 +1,3 @@
-import { removeOnSwap } from './media';
-
 /**
  * Reading progress bar on case studies. Browsers with scroll timelines animate it
  * in CSS (styles/motion.css); this sets `--progress` for the rest.
@@ -15,5 +13,4 @@ export function initReadingProgress(): void {
 
   update();
   window.addEventListener('scroll', update, { passive: true });
-  removeOnSwap('scroll', update);
 }

@@ -4,6 +4,8 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import vercel from '@astrojs/vercel';
 import tailwindcss from '@tailwindcss/vite';
+import securityHeaders from './integrations/security-headers.ts';
+import { CSP, SECURITY_HEADERS } from './src/config/security.ts';
 import { SITE } from './src/config/site.ts';
 
 // Static-first: every page is pre-rendered at build time.
@@ -11,9 +13,15 @@ import { SITE } from './src/config/site.ts';
 export default defineConfig({
   site: SITE.url,
   output: 'static',
-  adapter: vercel(),
+  // staticHeaders: send the CSP as an HTTP header for pre-rendered pages instead of a <meta> tag.
+  adapter: vercel({ staticHeaders: true }),
   trailingSlash: 'never',
-  integrations: [mdx(), sitemap()],
+  integrations: [mdx(), sitemap(), securityHeaders(SECURITY_HEADERS)],
+  security: {
+    // Rejects cross-site form posts to on-demand routes (CSRF protection for /api/contact).
+    checkOrigin: true,
+    csp: CSP,
+  },
   prefetch: { prefetchAll: true, defaultStrategy: 'viewport' },
   markdown: {
     shikiConfig: {

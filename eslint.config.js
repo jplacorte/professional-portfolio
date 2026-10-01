@@ -21,4 +21,22 @@ export default defineConfig(
       'no-console': ['warn', { allow: ['warn', 'error'] }],
     },
   },
+  {
+    // Type-aware rules for TypeScript modules: catch unsafe `any`, floating promises and impossible conditions.
+    files: ['**/*.ts'],
+    extends: [tseslint.configs.strictTypeChecked],
+    languageOptions: {
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+    },
+    rules: {
+      // Numbers in template strings (CSS values, coordinates) are intentional throughout the motion code.
+      '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
+      '@typescript-eslint/no-confusing-void-expression': ['error', { ignoreArrowShorthand: true }],
+    },
+  },
+  {
+    // CLI helpers and test tooling may print to stdout.
+    files: ['tests/**', 'tools/**', 'integrations/**'],
+    rules: { 'no-console': 'off' },
+  },
 );

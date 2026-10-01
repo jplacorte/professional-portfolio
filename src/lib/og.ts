@@ -6,6 +6,7 @@ import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { Resvg } from '@resvg/resvg-js';
 import satori from 'satori';
+import { woffToSfnt } from './woff';
 import { SITE } from '@/config/site';
 
 export const OG_WIDTH = 1200;
@@ -36,13 +37,13 @@ type Font = { name: string; data: Buffer; weight: 400 | 500 | 600 | 700; style: 
 const require = createRequire(import.meta.url);
 let fontsPromise: Promise<Font[]> | undefined;
 
-/** Satori needs raw font files (WOFF/TTF, not WOFF2); loaded once per build. */
+/** Fontsource ships WOFF; it is unpacked to TrueType (see woff.ts) and loaded once per build. */
 function loadFonts(): Promise<Font[]> {
   const load = async (name: string, pkg: string, weight: Font['weight']): Promise<Font> => ({
     name,
     weight,
     style: 'normal',
-    data: await readFile(require.resolve(pkg)),
+    data: woffToSfnt(await readFile(require.resolve(pkg))),
   });
   fontsPromise ??= Promise.all([
     load('Inter', '@fontsource/inter/files/inter-latin-400-normal.woff', 400),
@@ -52,8 +53,14 @@ function loadFonts(): Promise<Font[]> {
   return fontsPromise;
 }
 
+/** The plain-object element tree satori accepts (the same shape JSX compiles to), so no React is needed. */
+interface SatoriElement {
+  type: string;
+  props: { style: Record<string, unknown>; children?: unknown };
+}
+
 /** Minimal element helper so the template reads like markup without needing JSX. */
-const el = (type: string, style: Record<string, unknown>, children?: unknown) => ({
+const el = (type: string, style: Record<string, unknown>, children?: unknown): SatoriElement => ({
   type,
   props: { style: { display: 'flex', ...style }, children },
 });
@@ -180,7 +187,7 @@ function template({ eyebrow, title, description, tags = [] }: OgImageContent) {
 }
 
 export async function renderOgImage(content: OgImageContent): Promise<Buffer> {
-  const svg = await satori(template(content) as Parameters<typeof satori>[0], {
+  const svg = await satori(template(content), {
     width: OG_WIDTH,
     height: OG_HEIGHT,
     fonts: await loadFonts(),

@@ -5,7 +5,8 @@
   type="button"
   data-theme-toggle
   class="grid size-8 place-items-center rounded-full text-muted transition-colors hover:bg-line hover:text-ink"
-  aria-label="Toggle dark mode"
+  aria-label="Dark theme"
+  aria-pressed="false"
 >
   <svg viewBox="0 0 24 24" class="size-[18px]" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
     <circle cx="12" cy="12" r="4.2" class="origin-center transition-transform duration-500 dark:scale-0"></circle>
@@ -18,49 +19,3 @@
     ></path>
   </svg>
 </button>
-
-<script>
-  function toggle(e: MouseEvent) {
-    const root = document.documentElement;
-    const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
-    const commit = () => {
-      root.dataset.theme = next;
-      try {
-        localStorage.setItem('theme', next);
-      } catch {
-        // Storage can be blocked (private mode); the theme still applies to this page.
-      }
-    };
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    // Circular reveal from the button using the View Transitions API.
-    if (!document.startViewTransition || reduced) return commit();
-    const x = e.clientX,
-      y = e.clientY;
-    const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
-    root.classList.add('theme-switching');
-    const vt = document.startViewTransition(commit);
-    vt.ready.then(() => {
-      root.animate(
-        { clipPath: [`circle(0 at ${x}px ${y}px)`, `circle(${r}px at ${x}px ${y}px)`] },
-        { duration: 650, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', pseudoElement: '::view-transition-new(root)' },
-      );
-    });
-    vt.finished.finally(() => root.classList.remove('theme-switching'));
-  }
-  document.addEventListener('astro:page-load', () => {
-    // The header persists across navigations, so only bind once.
-    const btn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
-    if (btn && !btn.dataset.bound) {
-      btn.dataset.bound = '1';
-      btn.addEventListener('click', toggle);
-    }
-  });
-</script>
-
-<style is:global>
-  .theme-switching::view-transition-old(root),
-  .theme-switching::view-transition-new(root) {
-    animation: none;
-    mix-blend-mode: normal;
-  }
-</style>

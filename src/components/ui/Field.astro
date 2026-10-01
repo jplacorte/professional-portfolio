@@ -1,0 +1,16 @@
+---
+/** Label wrapper shared by TextField and TextArea. The control is passed in the default slot. */
+interface Props {
+  label: string;
+  optional?: boolean;
+}
+const { label, optional = false } = Astro.props;
+---
+
+<label class="block space-y-2">
+  <span class="text-sm font-medium">
+    {label}
+    {optional && <span class="text-muted"> (optional)</span>}
+  </span>
+  <slot />
+</label>

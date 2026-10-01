@@ -5,7 +5,10 @@ import { SITE } from '@/config/site';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="Contact" description={`Get in touch with ${SITE.name}.`}>
+<BaseLayout
+  title="Contact"
+  description={`Contact ${SITE.name}, a ${SITE.role.toLowerCase()} in Manila, about senior roles, freelance projects or a second opinion on an architecture.`}
+>
   <section class="container-page grid gap-14 pt-20 lg:grid-cols-[1fr_1.1fr]">
     <div>
       <p class="eyebrow fade-in-late" style="--delay:0ms">

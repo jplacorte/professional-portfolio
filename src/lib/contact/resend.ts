@@ -2,15 +2,16 @@ import type { ContactEmail } from './email';
 
 const RESEND_URL = 'https://api.resend.com/emails';
 const DEFAULT_FROM = 'Portfolio <onboarding@resend.dev>';
+const TIMEOUT_MS = 8_000;
 
-interface SendOptions {
+export interface ResendOptions {
   apiKey: string;
   to: string;
   from?: string | undefined;
 }
 
-/** Sends the notification through Resend's REST API (no SDK needed). Throws on failure. */
-export async function sendWithResend(email: ContactEmail, { apiKey, to, from }: SendOptions): Promise<void> {
+/** Sends the notification through Resend's REST API (no SDK needed). Throws on failure or timeout. */
+export async function sendWithResend(email: ContactEmail, { apiKey, to, from }: ResendOptions): Promise<void> {
   const res = await fetch(RESEND_URL, {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
@@ -21,6 +22,11 @@ export async function sendWithResend(email: ContactEmail, { apiKey, to, from }: 
       subject: email.subject,
       html: email.html,
     }),
+    signal: AbortSignal.timeout(TIMEOUT_MS),
   });
-  if (!res.ok) throw new Error(`Resend responded ${res.status}: ${await res.text()}`);
+  if (!res.ok) {
+    // Resend's error body names the problem (e.g. "domain is not verified"); cap it so logs stay small.
+    const detail = (await res.text()).slice(0, 300);
+    throw new Error(`Resend responded ${res.status}: ${detail}`);
+  }
 }

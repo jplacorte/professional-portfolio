@@ -13,6 +13,16 @@ describe('ContactSchema', () => {
     expect(ContactSchema.parse({ ...valid, name: '  Ada  ' }).name).toBe('Ada');
   });
 
+  it('collapses line breaks in single-line fields so they cannot inject email headers', () => {
+    const result = ContactSchema.parse({ ...valid, name: 'Ada\r\nBcc: victim@example.com', company: 'Acme\nInc' });
+    expect(result.name).toBe('Ada Bcc: victim@example.com');
+    expect(result.company).toBe('Acme Inc');
+  });
+
+  it('keeps line breaks in the message but strips other control characters', () => {
+    expect(ContactSchema.parse({ ...valid, message: 'Line one\nLine two\u0007' }).message).toBe('Line one\nLine two');
+  });
+
   it.each([
     ['missing name', { ...valid, name: '   ' }, 'Please add your name'],
     ['invalid email', { ...valid, email: 'not-an-email' }, 'Please use a valid email'],

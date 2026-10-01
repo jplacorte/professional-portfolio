@@ -1,9 +1,9 @@
 ---
-import { ClientRouter } from 'astro:transitions';
 import Header from '@/components/layout/Header.astro';
 import Footer from '@/components/layout/Footer.astro';
 import { SITE } from '@/config/site';
 import { personJsonLd } from '@/lib/seo';
+import { THEME_INIT_SCRIPT } from '@/lib/theme';
 import '@/styles/global.css';
 
 interface Props {
@@ -67,24 +67,8 @@ const personLd = personJsonLd();
     <script is:inline type="application/ld+json" set:html={JSON.stringify(personLd)} />
     {jsonLd && <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
 
-    <!-- Apply theme before paint to avoid a flash. -->
-    <script is:inline>
-      (() => {
-        const apply = () => {
-          let stored = null;
-          try {
-            stored = localStorage.getItem('theme');
-          } catch {
-            // Storage can be blocked (private mode); fall back to the OS preference.
-          }
-          const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
-          document.documentElement.dataset.theme = stored || (prefersDark ? 'dark' : 'light');
-        };
-        apply();
-        document.addEventListener('astro:after-swap', apply);
-      })();
-    </script>
-    <ClientRouter fallback="swap" />
+    <!-- Applies the saved theme before first paint. Allowed by CSP hash (see astro.config.mjs). -->
+    <script is:inline set:html={THEME_INIT_SCRIPT} />
   </head>
   <body class="flex min-h-dvh flex-col">
     <a
@@ -100,8 +84,7 @@ const personLd = personJsonLd();
     <Footer />
 
     <script>
-      import { initPage } from '@/scripts';
-      document.addEventListener('astro:page-load', initPage);
+      import '@/scripts';
     </script>
   </body>
 </html>
