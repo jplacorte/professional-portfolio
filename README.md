@@ -1,4 +1,4 @@
-# John Phillip Lacorte — Portfolio
+# John Phillip Febrero Lacorte — Portfolio
 
 [![CI](https://github.com/jplacorte/professional-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/jplacorte/professional-portfolio/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/jplacorte/professional-portfolio/actions/workflows/codeql.yml/badge.svg)](https://github.com/jplacorte/professional-portfolio/actions/workflows/codeql.yml)

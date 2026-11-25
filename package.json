@@ -1,11 +1,11 @@
 {
   "name": "professional-portfolio",
   "version": "1.0.0",
-  "description": "Portfolio and case studies of John Phillip Lacorte — static-first Astro site with a strict CSP, typed content and end-to-end tests.",
+  "description": "Portfolio and case studies of John Phillip Febrero Lacorte — static-first Astro site with a strict CSP, typed content and end-to-end tests.",
   "private": true,
   "type": "module",
   "author": {
-    "name": "John Phillip Lacorte",
+    "name": "John Phillip Febrero Lacorte",
     "email": "jaypeelacorte28@gmail.com",
     "url": "https://john-phillip-lacorte.vercel.app"
   },

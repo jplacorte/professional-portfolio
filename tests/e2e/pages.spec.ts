@@ -8,7 +8,7 @@ test.describe('every page', () => {
       await settle(page);
 
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(heading);
-      await expect(page).toHaveTitle(/John Phillip Lacorte/);
+      await expect(page).toHaveTitle(/John Phillip Febrero Lacorte/);
       await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /.{50,}/);
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /^https:\/\//);
       await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /\/og\/.+\.png$/);

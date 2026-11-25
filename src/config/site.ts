@@ -3,8 +3,8 @@
 
 export const SITE = {
   url: 'https://john-phillip-lacorte.vercel.app',
-  name: 'John Phillip Lacorte',
-  shortName: 'John Phillip Lacorte',
+  name: 'John Phillip Febrero Lacorte',
+  shortName: 'John Phillip Febrero Lacorte',
   /** Used in first-person copy: "I'm John Phillip". */
   firstName: 'John Phillip',
   role: 'Full Stack Senior Software Engineer',
